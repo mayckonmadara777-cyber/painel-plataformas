@@ -6,6 +6,7 @@
 <title>Painel do ADM Way</title>
 
 <style>
+
 :root{
   --bg:#07050b;
   --card:#110c18;
@@ -25,7 +26,11 @@ body{
   margin:0;
   min-height:100vh;
   background:
-    radial-gradient(circle at top,#1c0b2b,#07050b 48%);
+    radial-gradient(
+      circle at top,
+      #1c0b2b,
+      #07050b 48%
+    );
   color:var(--txt);
   font-family:system-ui,Arial,sans-serif;
 }
@@ -107,7 +112,12 @@ button,
   padding:11px 14px;
   font-weight:800;
   color:white;
-  background:linear-gradient(135deg,#7e31e8,#b85cff);
+  background:
+    linear-gradient(
+      135deg,
+      #7e31e8,
+      #b85cff
+    );
   cursor:pointer;
   text-decoration:none;
   display:inline-block;
@@ -174,7 +184,11 @@ button:disabled{
 
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  grid-template-columns:
+    repeat(
+      auto-fill,
+      minmax(220px,1fr)
+    );
   gap:14px;
 }
 
@@ -350,7 +364,9 @@ button:disabled{
   .top{
     align-items:flex-start;
   }
+
 }
+
 </style>
 </head>
 
@@ -373,40 +389,50 @@ button:disabled{
     <form id="loginForm">
 
       <div class="field">
-        <label>Telefone</label>
+
+        <label>
+          Telefone
+        </label>
 
         <input
           id="phone"
           inputmode="tel"
           required
         >
+
       </div>
 
       <div class="field">
-        <label>Senha</label>
+
+        <label>
+          Senha
+        </label>
 
         <input
           id="pass"
           type="password"
           required
         >
+
       </div>
 
       <button
-        style="width:100%"
         type="submit"
+        style="width:100%"
       >
         ENTRAR
       </button>
 
-      <p id="err" class="muted"></p>
+      <p
+        id="err"
+        class="muted"
+      ></p>
 
     </form>
 
   </div>
 
 </div>
-
 
 <!-- PAINEL -->
 
@@ -483,7 +509,9 @@ button:disabled{
             Plataformas
           </h2>
 
-          <button onclick="platformModal()">
+          <button
+            onclick="platformModal()"
+          >
             + Adicionar
           </button>
 
@@ -508,7 +536,9 @@ button:disabled{
             Clientes
           </h2>
 
-          <button onclick="clientModal()">
+          <button
+            onclick="clientModal()"
+          >
             + Adicionar
           </button>
 
@@ -635,9 +665,11 @@ async function api(url, options = {}) {
   } catch {}
 
   if (!response.ok) {
+
     throw Error(
       result.error || "Erro"
     );
+
   }
 
   return result;
@@ -653,7 +685,9 @@ async function boot(){
   try{
 
     me =
-      (await api("/api/auth/me")).user;
+      (await api(
+        "/api/auth/me"
+      )).user;
 
     show();
 
@@ -703,7 +737,7 @@ function show(){
       .classList
       .remove("hidden");
 
-        load();
+    load();
 
   }
 
@@ -731,8 +765,13 @@ async e => {
             method:"POST",
 
             body:JSON.stringify({
-              phone:$("phone").value,
-              password:$("pass").value
+
+              phone:
+                $("phone").value,
+
+              password:
+                $("pass").value
+
             })
           }
         )
@@ -775,9 +814,12 @@ async function logout(){
 function tab(id, button){
 
   document
-    .querySelectorAll("#admin>section")
+    .querySelectorAll(
+      "#admin>section"
+    )
     .forEach(section =>
-      section.classList.add("hidden")
+      section.classList
+        .add("hidden")
     );
 
 
@@ -789,14 +831,15 @@ function tab(id, button){
   document
     .querySelectorAll(".tab")
     .forEach(tab =>
-      tab.classList.remove("active")
+      tab.classList
+        .remove("active")
     );
 
 
-  button.classList.add("active");
+  button.classList
+    .add("active");
 
 }
-
 
 /* =========================
    CARREGAR DADOS
@@ -806,7 +849,9 @@ async function load(){
 
   data =
     (
-      await api("/api/platforms")
+      await api(
+        "/api/platforms"
+      )
     ).platforms;
 
 
@@ -824,16 +869,27 @@ async function load(){
    CARD PLATAFORMA
 ========================= */
 
-function card(platform, admin = false){
+function card(
+  platform,
+  admin = false
+){
 
   const image =
     platform.image_url
 
       ? `
         <img
-          src="${esc(platform.image_url)}"
-          alt="${esc(platform.name)}"
-          onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;ph&quot;>✦</div>'"
+          src="${esc(
+            platform.image_url
+          )}"
+          alt="${esc(
+            platform.name
+          )}"
+          onerror="
+            this.style.display='none';
+            this.parentElement.innerHTML=
+            '<div class=&quot;ph&quot;>✦</div>'
+          "
         >
       `
 
@@ -848,7 +904,10 @@ function card(platform, admin = false){
 
     ? `
       <button
-        onclick='platformModal(${JSON.stringify(platform).replace(/'/g,"&#39;")})'
+        onclick='platformModal(
+          ${JSON.stringify(platform)
+            .replace(/'/g,"&#39;")}
+        )'
       >
         Editar
       </button>
@@ -918,7 +977,10 @@ function render(){
 
         ? data
             .map(platform =>
-              card(platform,true)
+              card(
+                platform,
+                true
+              )
             )
             .join("")
 
@@ -932,6 +994,11 @@ function render(){
 
   }
 
+
+  /*
+    PLATAFORMAS RECENTES:
+    SOMENTE OS ÚLTIMOS 7 DIAS
+  */
 
   const SEVEN_DAYS =
     7 * 24 * 60 * 60 * 1000;
@@ -964,7 +1031,8 @@ function render(){
 
       : `
         <div class="empty">
-          Nenhuma plataforma nos últimos 7 dias.
+          Nenhuma plataforma nos
+          últimos 7 dias.
         </div>
       `;
 
@@ -991,11 +1059,16 @@ function render(){
    MODAL
 ========================= */
 
-function openM(title, body){
+function openM(
+  title,
+  body
+){
 
-  $("mt").textContent = title;
+  $("mt").textContent =
+    title;
 
-  $("mb").innerHTML = body;
+  $("mb").innerHTML =
+    body;
 
   $("modal")
     .classList
@@ -1014,10 +1087,12 @@ function closeM(){
 
 
 /* =========================
-   PLATAFORMA
+   MODAL PLATAFORMA
 ========================= */
 
-function platformModal(platform = null){
+function platformModal(
+  platform = null
+){
 
   openM(
 
@@ -1029,6 +1104,7 @@ function platformModal(platform = null){
       <form id="pf">
 
         <div class="formgrid">
+
 
           <div class="field">
 
@@ -1072,7 +1148,9 @@ function platformModal(platform = null){
               Descrição
             </label>
 
-            <textarea id="pd">${esc(
+            <textarea
+              id="pd"
+            >${esc(
               platform?.description || ""
             )}</textarea>
 
@@ -1082,10 +1160,17 @@ function platformModal(platform = null){
           <div class="field full">
 
             <div class="auto-image-info">
+
               🖼️ <b>Imagem automática</b><br>
-              Você não precisa colocar nenhuma imagem.
-              O sistema vai tentar encontrar automaticamente
-              a imagem ou logo da própria plataforma através do link.
+
+              Você não precisa colocar
+              nenhuma imagem.
+
+              O sistema vai tentar encontrar
+              automaticamente a imagem ou logo
+              da própria plataforma através
+              do link informado.
+
             </div>
 
           </div>
@@ -1107,6 +1192,7 @@ function platformModal(platform = null){
 
           </div>
 
+
         </div>
 
       </form>
@@ -1119,12 +1205,16 @@ function platformModal(platform = null){
 
     e.preventDefault();
 
-    const submitButton =
+
+    const button =
       $("savePlatform");
 
-    submitButton.disabled = true;
 
-    submitButton.textContent =
+    button.disabled =
+      true;
+
+
+    button.textContent =
       platform
         ? "SALVANDO..."
         : "BUSCANDO IMAGEM...";
@@ -1140,6 +1230,7 @@ function platformModal(platform = null){
           : "/api/platforms",
 
         {
+
           method:
             platform
               ? "PUT"
@@ -1168,16 +1259,22 @@ function platformModal(platform = null){
 
       await load();
 
+
     }catch(error){
 
-      submitButton.disabled = false;
+      button.disabled =
+        false;
 
-      submitButton.textContent =
+
+      button.textContent =
         platform
           ? "SALVAR"
           : "ADICIONAR PLATAFORMA";
 
-      alert(error.message);
+
+      alert(
+        error.message
+      );
 
     }
 
@@ -1200,20 +1297,29 @@ async function delP(id){
     return;
   }
 
+
   try{
 
     await api(
-      "/api/platforms/" + id,
+
+      "/api/platforms/" +
+      id,
+
       {
         method:"DELETE"
       }
+
     );
+
 
     await load();
 
+
   }catch(error){
 
-    alert(error.message);
+    alert(
+      error.message
+    );
 
   }
 
@@ -1248,12 +1354,16 @@ async function clients(){
                 <div>
 
                   <b>
-                    ${esc(client.phone)}
+                    ${esc(
+                      client.phone
+                    )}
                   </b>
 
                   <br>
 
-                  <small class="muted">
+                  <small
+                    class="muted"
+                  >
                     ${new Date(
                       client.created_at
                     ).toLocaleDateString(
@@ -1268,7 +1378,13 @@ async function clients(){
 
                   <button
                     class="secondary"
-                    onclick='clientModal(${JSON.stringify(client).replace(/'/g,"&#39;")})'
+                    onclick='clientModal(
+                      ${JSON.stringify(client)
+                        .replace(
+                          /'/g,
+                          "&#39;"
+                        )}
+                    )'
                   >
                     Editar
                   </button>
@@ -1276,7 +1392,9 @@ async function clients(){
 
                   <button
                     class="danger"
-                    onclick="delC(${client.id})"
+                    onclick="delC(
+                      ${client.id}
+                    )"
                   >
                     Excluir
                   </button>
@@ -1294,24 +1412,32 @@ async function clients(){
           </div>
         `;
 
+
   }catch(error){
 
     $("clientList").innerHTML = `
+
       <div class="empty">
-        ${esc(error.message)}
+
+        ${esc(
+          error.message
+        )}
+
       </div>
+
     `;
 
   }
 
-}
+                }
 
-
-/* =========================
+  /* =========================
    MODAL CLIENTE
 ========================= */
 
-function clientModal(client = null){
+function clientModal(
+  client = null
+){
 
   openM(
 
@@ -1342,11 +1468,13 @@ function clientModal(client = null){
         <div class="field">
 
           <label>
+
             ${
               client
                 ? "Nova senha (opcional)"
                 : "Senha"
             }
+
           </label>
 
           <input
@@ -1366,11 +1494,13 @@ function clientModal(client = null){
           type="submit"
           style="width:100%"
         >
+
           ${
             client
               ? "SALVAR"
               : "CRIAR CLIENTE"
           }
+
         </button>
 
       </form>
@@ -1382,6 +1512,7 @@ function clientModal(client = null){
   async e => {
 
     e.preventDefault();
+
 
     try{
 
@@ -1396,8 +1527,7 @@ function clientModal(client = null){
 
           method:
             client
-
-                          ? "PUT"
+              ? "PUT"
               : "POST",
 
           body:
@@ -1420,9 +1550,12 @@ function clientModal(client = null){
 
       clients();
 
+
     }catch(error){
 
-      alert(error.message);
+      alert(
+        error.message
+      );
 
     }
 
@@ -1445,20 +1578,29 @@ async function delC(id){
     return;
   }
 
+
   try{
 
     await api(
-      "/api/clients/" + id,
+
+      "/api/clients/" +
+      id,
+
       {
         method:"DELETE"
       }
+
     );
+
 
     clients();
 
+
   }catch(error){
 
-    alert(error.message);
+    alert(
+      error.message
+    );
 
   }
 
@@ -1475,5 +1617,3 @@ boot();
 
 </body>
 </html>
-
-  
