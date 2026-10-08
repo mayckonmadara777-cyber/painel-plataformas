@@ -453,7 +453,7 @@ async function findPlatformImage(
     const timeout =
       setTimeout(
         () => controller.abort(),
-        10000
+        12000
       );
 
 
@@ -511,50 +511,155 @@ async function findPlatformImage(
     }
 
 
+    const finalUrl =
+      response.url ||
+      platformUrl;
+
+
     const html =
       await response.text();
 
 
-    const image =
+    /*
+      1. PRIMEIRO:
+      imagem principal definida
+      pelo próprio site.
+    */
+
+    const metaImage =
       extractMetaImage(
         html,
-        response.url ||
-          platformUrl
+        finalUrl
       );
 
 
-    if (image) {
+    if (metaImage) {
+
+      return metaImage;
+
+    }
+
+
+    /*
+      2. SE NÃO EXISTIR OG IMAGE:
+      procurar imagens da própria página.
+    */
+
+    const imageCandidates = [];
+
+    let match;
+
+
+    const imgRegex =
+      /<img[^>]+(?:src|data-src|data-lazy-src)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+
+    while (
+      (match =
+        imgRegex.exec(html)) !==
+      null
+    ) {
+
+      const src =
+        String(match[1])
+          .trim();
+
+
+      if (!src) {
+        continue;
+      }
+
+
+      const resolved =
+        resolveImageUrl(
+          src,
+          finalUrl
+        );
+
+
+      if (
+        resolved &&
+        isHttpUrl(resolved)
+      ) {
+
+        imageCandidates.push(
+          resolved
+        );
+
+      }
+
+    }
+
+
+    /*
+      Remove imagens pequenas,
+      SVGs, rastreadores e arquivos
+      obviamente irrelevantes.
+    */
+
+    for (
+      const image of imageCandidates
+    ) {
+
+      const lower =
+        image.toLowerCase();
+
+
+      if (
+        lower.includes(
+          "pixel"
+        ) ||
+        lower.includes(
+          "tracking"
+        ) ||
+        lower.includes(
+          "spacer"
+        ) ||
+        lower.endsWith(
+          ".svg"
+        ) ||
+        lower.includes(
+          "1x1"
+        )
+      ) {
+
+        continue;
+
+      }
+
 
       return image;
 
     }
 
 
+    /*
+      3. ÚLTIMO RECURSO:
+      procurar favicon próprio
+      da plataforma.
+      
+      NÃO usa Google.
+    */
+
     try {
 
-      const domain =
+      const origin =
         new URL(
-          response.url ||
-            platformUrl
-        ).hostname;
+          finalUrl
+        ).origin;
 
 
-      if (domain) {
+      return (
+        origin +
+        "/favicon.ico"
+      );
 
-        return (
-          "https://www.google.com/s2/favicons?domain=" +
-          encodeURIComponent(
-            domain
-          ) +
-          "&sz=256"
-        );
+    } catch (error) {
 
-      }
+      return "";
 
-    } catch (error) {}
+    }
 
-
-    return "";
 
   } catch (error) {
 
@@ -564,34 +669,35 @@ async function findPlatformImage(
     );
 
 
+    /*
+      Mesmo se a página bloquear
+      o acesso, tenta o favicon
+      original da própria plataforma.
+    */
+
     try {
 
-      const domain =
+      const origin =
         new URL(
           platformUrl
-        ).hostname;
+        ).origin;
 
 
-      if (domain) {
+      return (
+        origin +
+        "/favicon.ico"
+      );
 
-        return (
-          "https://www.google.com/s2/favicons?domain=" +
-          encodeURIComponent(
-            domain
-          ) +
-          "&sz=256"
-        );
+    } catch (error) {
 
-      }
+      return "";
 
-    } catch (error) {}
-
-
-    return "";
+    }
 
   }
 
 }
+
 
 /* =========================
    BANCO DE DADOS
