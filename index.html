@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MK Painel</title>
+<title>Painel do ADM Way</title>
 
 <style>
 :root{
@@ -18,7 +18,7 @@
 }
 
 *{
-  box-sizing:border-box
+  box-sizing:border-box;
 }
 
 body{
@@ -27,24 +27,24 @@ body{
   background:
     radial-gradient(circle at top,#1c0b2b,#07050b 48%);
   color:var(--txt);
-  font-family:system-ui,Arial,sans-serif
+  font-family:system-ui,Arial,sans-serif;
 }
 
 .hidden{
-  display:none!important
+  display:none!important;
 }
 
 .wrap{
   max-width:1100px;
   margin:auto;
-  padding:16px
+  padding:16px;
 }
 
 .login{
   min-height:100vh;
   display:grid;
   place-items:center;
-  padding:18px
+  padding:18px;
 }
 
 .box{
@@ -53,31 +53,31 @@ body{
   border:1px solid var(--line);
   border-radius:24px;
   padding:28px;
-  box-shadow:0 0 45px #9b4dff25
+  box-shadow:0 0 45px #9b4dff25;
 }
 
 .logo{
   font-size:26px;
-  font-weight:900
+  font-weight:900;
 }
 
 .logo b{
-  color:var(--p2)
+  color:var(--p2);
 }
 
 .muted{
-  color:var(--muted)
+  color:var(--muted);
 }
 
 .field{
-  margin:12px 0
+  margin:12px 0;
 }
 
 .field label{
   display:block;
   font-size:13px;
   margin-bottom:6px;
-  color:#d4c8dd
+  color:#d4c8dd;
 }
 
 input,
@@ -88,16 +88,16 @@ textarea{
   border:1px solid #382248;
   background:#0a0710;
   color:white;
-  outline:0
+  outline:0;
 }
 
 textarea{
-  min-height:90px
+  min-height:90px;
 }
 
 input:focus,
 textarea:focus{
-  border-color:var(--p)
+  border-color:var(--p);
 }
 
 button,
@@ -110,21 +110,26 @@ button,
   background:linear-gradient(135deg,#7e31e8,#b85cff);
   cursor:pointer;
   text-decoration:none;
-  display:inline-block
+  display:inline-block;
+}
+
+button:disabled{
+  opacity:.6;
+  cursor:wait;
 }
 
 .secondary{
-  background:#21152c
+  background:#21152c;
 }
 
 .danger{
   background:#42101e;
-  color:#ff9aae
+  color:#ff9aae;
 }
 
 .small{
   font-size:13px;
-  padding:9px 11px
+  padding:9px 11px;
 }
 
 .top,
@@ -132,11 +137,11 @@ button,
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:10px
+  gap:10px;
 }
 
 .top{
-  padding:8px 0 20px
+  padding:8px 0 20px;
 }
 
 .hero{
@@ -144,83 +149,84 @@ button,
   border:1px solid var(--line);
   border-radius:20px;
   padding:20px;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .hero h1{
-  margin:0 0 5px
+  margin:0 0 5px;
 }
 
 .tabs{
   display:flex;
   gap:8px;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .tab{
   background:#0e0913;
-  border:1px solid var(--line)
+  border:1px solid var(--line);
 }
 
 .tab.active{
   background:#2a173b;
-  border-color:#783db0
+  border-color:#783db0;
 }
 
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-  gap:14px
+  gap:14px;
 }
 
 .card{
   background:#110c18;
   border:1px solid var(--line);
   border-radius:18px;
-  overflow:hidden
+  overflow:hidden;
 }
 
 .thumb{
   height:125px;
   background:#0b0810;
   display:grid;
-  place-items:center
+  place-items:center;
+  overflow:hidden;
 }
 
 .thumb img{
   width:100%;
   height:100%;
-  object-fit:cover
+  object-fit:cover;
 }
 
 .ph{
   font-size:36px;
-  color:var(--p2)
+  color:var(--p2);
 }
 
 .body{
-  padding:14px
+  padding:14px;
 }
 
 .body h3{
-  margin:0 0 6px
+  margin:0 0 6px;
 }
 
 .desc{
   color:var(--muted);
   font-size:13px;
-  min-height:36px
+  min-height:36px;
 }
 
 .actions{
   display:flex;
   gap:7px;
-  margin-top:12px
+  margin-top:12px;
 }
 
 .actions>*{
   flex:1;
-  text-align:center
+  text-align:center;
 }
 
 .panel{
@@ -228,22 +234,22 @@ button,
   border:1px solid var(--line);
   border-radius:18px;
   padding:17px;
-  margin-bottom:18px
+  margin-bottom:18px;
 }
 
 .formgrid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:12px
+  gap:12px;
 }
 
 .full{
-  grid-column:1/-1
+  grid-column:1/-1;
 }
 
 .list{
   display:grid;
-  gap:9px
+  gap:9px;
 }
 
 .row{
@@ -254,12 +260,12 @@ button,
   padding:12px;
   background:#0d0912;
   border:1px solid #261635;
-  border-radius:13px
+  border-radius:13px;
 }
 
 .ra{
   display:flex;
-  gap:7px
+  gap:7px;
 }
 
 .empty{
@@ -268,7 +274,7 @@ button,
   padding:24px;
   text-align:center;
   color:var(--muted);
-  grid-column:1/-1
+  grid-column:1/-1;
 }
 
 .modal{
@@ -278,7 +284,7 @@ button,
   display:grid;
   place-items:center;
   padding:16px;
-  z-index:5
+  z-index:5;
 }
 
 .modalbox{
@@ -288,49 +294,61 @@ button,
   background:#100b16;
   border:1px solid var(--line);
   border-radius:20px;
-  padding:20px
+  padding:20px;
 }
 
 .modalhead{
   display:flex;
-  justify-content:space-between
+  justify-content:space-between;
+  align-items:center;
 }
 
 .close{
   background:none;
   font-size:26px;
-  padding:0
+  padding:0;
+}
+
+.auto-image-info{
+  background:#160d20;
+  border:1px solid #39204e;
+  color:#cdb7df;
+  border-radius:12px;
+  padding:11px;
+  font-size:12px;
+  line-height:1.5;
+  margin-top:8px;
 }
 
 @media(max-width:650px){
 
   .formgrid{
-    grid-template-columns:1fr
+    grid-template-columns:1fr;
   }
 
   .full{
-    grid-column:auto
+    grid-column:auto;
   }
 
   .grid{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .row{
     flex-direction:column;
-    align-items:flex-start
+    align-items:flex-start;
   }
 
   .ra{
-    width:100%
+    width:100%;
   }
 
   .ra>*{
-    flex:1
+    flex:1;
   }
 
   .top{
-    align-items:flex-start
+    align-items:flex-start;
   }
 }
 </style>
@@ -345,7 +363,7 @@ button,
   <div class="box">
 
     <div class="logo">
-      MK <b>PAINEL</b>
+      PAINEL <b>DO ADM WAY</b>
     </div>
 
     <p class="muted">
@@ -356,6 +374,7 @@ button,
 
       <div class="field">
         <label>Telefone</label>
+
         <input
           id="phone"
           inputmode="tel"
@@ -365,6 +384,7 @@ button,
 
       <div class="field">
         <label>Senha</label>
+
         <input
           id="pass"
           type="password"
@@ -372,7 +392,10 @@ button,
         >
       </div>
 
-      <button style="width:100%">
+      <button
+        style="width:100%"
+        type="submit"
+      >
         ENTRAR
       </button>
 
@@ -394,7 +417,7 @@ button,
     <header class="top">
 
       <div class="logo">
-        MK <b>PAINEL</b>
+        PAINEL <b>DO ADM WAY</b>
       </div>
 
       <div>
@@ -419,7 +442,7 @@ button,
     <div class="hero">
 
       <h1 id="title">
-        Painel
+        Painel do ADM Way
       </h1>
 
       <div class="muted">
@@ -605,19 +628,19 @@ async function api(url, options = {}) {
     }
   );
 
-  let data = {};
+  let result = {};
 
   try {
-    data = await response.json();
+    result = await response.json();
   } catch {}
 
   if (!response.ok) {
     throw Error(
-      data.error || "Erro"
+      result.error || "Erro"
     );
   }
 
-  return data;
+  return result;
 }
 
 
@@ -663,9 +686,7 @@ function show(){
 
 
   $("title").textContent =
-    me.role === "admin"
-      ? "Área administrativa"
-      : "Área do cliente";
+    "Painel do ADM Way";
 
 
   if(me.role === "admin"){
@@ -682,7 +703,7 @@ function show(){
       .classList
       .remove("hidden");
 
-    load();
+        load();
 
   }
 
@@ -807,8 +828,20 @@ function card(platform, admin = false){
 
   const image =
     platform.image_url
-      ? `<img src="${esc(platform.image_url)}">`
-      : `<div class="ph">✦</div>`;
+
+      ? `
+        <img
+          src="${esc(platform.image_url)}"
+          alt="${esc(platform.name)}"
+          onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;ph&quot;>✦</div>'"
+        >
+      `
+
+      : `
+        <div class="ph">
+          ✦
+        </div>
+      `;
 
 
   const actions = admin
@@ -900,9 +933,9 @@ function render(){
   }
 
 
-  /*
-    7 DIAS = 604800000 MILISSEGUNDOS
-  */
+  const SEVEN_DAYS =
+    7 * 24 * 60 * 60 * 1000;
+
 
   const recent =
     data.filter(platform => {
@@ -914,7 +947,7 @@ function render(){
 
       return (
         Date.now() - created
-        < 604800000
+        < SEVEN_DAYS
       );
 
     });
@@ -1017,13 +1050,14 @@ function platformModal(platform = null){
           <div class="field">
 
             <label>
-              URL
+              URL da plataforma
             </label>
 
             <input
               id="pu"
               type="url"
               required
+              placeholder="https://exemplo.com"
               value="${esc(
                 platform?.url || ""
               )}"
@@ -1047,17 +1081,12 @@ function platformModal(platform = null){
 
           <div class="field full">
 
-            <label>
-              Imagem/logo (URL)
-            </label>
-
-            <input
-              id="pi"
-              type="url"
-              value="${esc(
-                platform?.image_url || ""
-              )}"
-            >
+            <div class="auto-image-info">
+              🖼️ <b>Imagem automática</b><br>
+              Você não precisa colocar nenhuma imagem.
+              O sistema vai tentar encontrar automaticamente
+              a imagem ou logo da própria plataforma através do link.
+            </div>
 
           </div>
 
@@ -1065,12 +1094,14 @@ function platformModal(platform = null){
           <div class="full">
 
             <button
+              id="savePlatform"
+              type="submit"
               style="width:100%"
             >
               ${
                 platform
                   ? "SALVAR"
-                  : "ADICIONAR"
+                  : "ADICIONAR PLATAFORMA"
               }
             </button>
 
@@ -1087,6 +1118,17 @@ function platformModal(platform = null){
   async e => {
 
     e.preventDefault();
+
+    const submitButton =
+      $("savePlatform");
+
+    submitButton.disabled = true;
+
+    submitButton.textContent =
+      platform
+        ? "SALVANDO..."
+        : "BUSCANDO IMAGEM...";
+
 
     try{
 
@@ -1106,15 +1148,14 @@ function platformModal(platform = null){
           body:
             JSON.stringify({
 
-              name:$("pn").value,
+              name:
+                $("pn").value,
 
-              url:$("pu").value,
+              url:
+                $("pu").value,
 
               description:
-                $("pd").value,
-
-              image_url:
-                $("pi").value
+                $("pd").value
 
             })
 
@@ -1128,6 +1169,13 @@ function platformModal(platform = null){
       await load();
 
     }catch(error){
+
+      submitButton.disabled = false;
+
+      submitButton.textContent =
+        platform
+          ? "SALVAR"
+          : "ADICIONAR PLATAFORMA";
 
       alert(error.message);
 
@@ -1145,10 +1193,14 @@ function platformModal(platform = null){
 async function delP(id){
 
   if(
-    confirm(
+    !confirm(
       "Excluir plataforma?"
     )
   ){
+    return;
+  }
+
+  try{
 
     await api(
       "/api/platforms/" + id,
@@ -1158,6 +1210,10 @@ async function delP(id){
     );
 
     await load();
+
+  }catch(error){
+
+    alert(error.message);
 
   }
 
@@ -1170,71 +1226,83 @@ async function delP(id){
 
 async function clients(){
 
-  const clients =
-    (
-      await api(
-        "/api/clients"
-      )
-    ).clients;
+  try{
+
+    const clients =
+      (
+        await api(
+          "/api/clients"
+        )
+      ).clients;
 
 
-  $("clientList").innerHTML =
+    $("clientList").innerHTML =
 
-    clients.length
+      clients.length
 
-      ? clients
-          .map(client => `
+        ? clients
+            .map(client => `
 
-            <div class="row">
+              <div class="row">
 
-              <div>
+                <div>
 
-                <b>
-                  ${esc(client.phone)}
-                </b>
+                  <b>
+                    ${esc(client.phone)}
+                  </b>
 
-                <br>
+                  <br>
 
-                <small class="muted">
-                  ${new Date(
-                    client.created_at
-                  ).toLocaleDateString(
-                    "pt-BR"
-                  )}
-                </small>
+                  <small class="muted">
+                    ${new Date(
+                      client.created_at
+                    ).toLocaleDateString(
+                      "pt-BR"
+                    )}
+                  </small>
+
+                </div>
+
+
+                <div class="ra">
+
+                  <button
+                    class="secondary"
+                    onclick='clientModal(${JSON.stringify(client).replace(/'/g,"&#39;")})'
+                  >
+                    Editar
+                  </button>
+
+
+                  <button
+                    class="danger"
+                    onclick="delC(${client.id})"
+                  >
+                    Excluir
+                  </button>
+
+                </div>
 
               </div>
 
+            `)
+            .join("")
 
-              <div class="ra">
+        : `
+          <div class="empty">
+            Nenhum cliente.
+          </div>
+        `;
 
-                <button
-                  class="secondary"
-                  onclick='clientModal(${JSON.stringify(client).replace(/'/g,"&#39;")})'
-                >
-                  Editar
-                </button>
+  }catch(error){
 
+    $("clientList").innerHTML = `
+      <div class="empty">
+        ${esc(error.message)}
+      </div>
+    `;
 
-                <button
-                  class="danger"
-                  onclick="delC(${client.id})"
-                >
-                  Excluir
-                </button>
-
-              </div>
-
-            </div>
-
-          `)
-          .join("")
-
-      : `
-        <div class="empty">
-          Nenhum cliente.
-        </div>
-      `;
+  }
 
 }
 
@@ -1295,6 +1363,7 @@ function clientModal(client = null){
 
 
         <button
+          type="submit"
           style="width:100%"
         >
           ${
@@ -1327,7 +1396,8 @@ function clientModal(client = null){
 
           method:
             client
-              ? "PUT"
+
+                          ? "PUT"
               : "POST",
 
           body:
@@ -1368,10 +1438,14 @@ function clientModal(client = null){
 async function delC(id){
 
   if(
-    confirm(
+    !confirm(
       "Excluir cliente?"
     )
   ){
+    return;
+  }
+
+  try{
 
     await api(
       "/api/clients/" + id,
@@ -1381,6 +1455,10 @@ async function delC(id){
     );
 
     clients();
+
+  }catch(error){
+
+    alert(error.message);
 
   }
 
@@ -1396,4 +1474,6 @@ boot();
 </script>
 
 </body>
-  </html>
+</html>
+
+  
