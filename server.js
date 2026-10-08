@@ -1005,7 +1005,95 @@ async function downloadImageAsDataUrl(
   }
 
   } 
-      
+
+
+/* =========================
+   TENTAR IMAGEM AUTOMATICAMENTE
+========================= */
+
+async function retryPlatformImage(
+  platformId,
+  platformUrl
+) {
+
+  const delays = [
+    8000,
+    20000,
+    40000
+  ];
+
+  for (const delay of delays) {
+
+    await new Promise(resolve =>
+      setTimeout(resolve, delay)
+    );
+
+    try {
+
+      const result = await pool.query(
+        `SELECT image_url
+         FROM platforms
+         WHERE id = $1`,
+        [platformId]
+      );
+
+      if (!result.rowCount) {
+        return;
+      }
+
+      if (result.rows[0].image_url) {
+        return;
+      }
+
+      console.log(
+        "Tentando buscar imagem novamente:",
+        platformUrl
+      );
+
+      const imageUrl =
+        await findPlatformImage(platformUrl);
+
+      if (
+        !imageUrl ||
+        !imageUrl.startsWith("data:image/")
+      ) {
+        continue;
+      }
+
+      await pool.query(
+        `UPDATE platforms
+         SET image_url = $1
+         WHERE id = $2
+           AND (image_url IS NULL OR image_url = '')`,
+        [imageUrl, platformId]
+      );
+
+      console.log(
+        "Imagem salva automaticamente para a plataforma:",
+        platformId
+      );
+
+      return;
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao tentar novamente a imagem:",
+        error.message
+      );
+
+    }
+
+  }
+
+  console.log(
+    "Não foi possível encontrar uma imagem após as tentativas:",
+    platformUrl
+  );
+
+}
+
+
 
 /* =========================
    BANCO DE DADOS
@@ -1630,10 +1718,24 @@ app.post(
         );
 
 
-      res.status(201).json({
-        platform:
-          result.rows[0]
-      });
+      
+const savedPlatform = result.rows[0];
+
+if (!savedPlatform.image_url) {
+
+  setImmediate(() => {
+    retryPlatformImage(
+      savedPlatform.id,
+      savedPlatform.url
+    );
+  });
+
+}
+
+res.status(201).json({
+  platform: savedPlatform
+});
+      
 
 
     } catch (error) {
