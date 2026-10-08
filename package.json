@@ -1,8 +1,8 @@
 {
   "name": "painel-plataformas",
   "version": "1.0.0",
-  "description": "Painel único de clientes e plataformas",
-  "main": "server.js",
+  "private": true,
+  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
