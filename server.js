@@ -431,391 +431,286 @@ function extractMetaImage(
    BUSCAR IMAGEM AUTOMÁTICA
 ========================= */
 
-async function findPlatformImage(
-  platformUrl
-) {
-
+async function findPlatformImage(platformUrl) {
   if (!isHttpUrl(platformUrl)) {
     return "";
   }
 
+  let finalUrl = platformUrl;
+
   try {
+    const controller = new AbortController();
 
-    const controller =
-      new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 12000);
 
-    const timeout =
-      setTimeout(
-        () => controller.abort(),
-        15000
-      );
+    let response;
 
-
-    const response =
-      await fetch(
-        platformUrl,
-        {
-          method: "GET",
-
-          redirect: "follow",
-
-          signal:
-            controller.signal,
-
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131 Mobile Safari/537.36",
-
-            "Accept":
-              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/png,image/jpeg,*/*;q=0.8",
-
-            "Accept-Language":
-              "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
-          }
+    try {
+      response = await fetch(platformUrl, {
+        redirect: "follow",
+        signal: controller.signal,
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36",
+          "Accept":
+            "text/html,application/xhtml+xml,image/*,*/*;q=0.8",
+          "Accept-Language":
+            "pt-BR,pt;q=0.9,en;q=0.8"
         }
-      );
-
-
-    clearTimeout(timeout);
-
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) {
-
-      throw new Error(
-        `HTTP ${response.status}`
+      console.log(
+        "Busca automática de imagem:",
+        response.status
       );
-
-    }
-
-
-    const finalUrl =
-      response.url ||
-      platformUrl;
-
-
-    const contentType =
-      response.headers.get(
-        "content-type"
-      ) || "";
-
-
-    /*
-      SE A PRÓPRIA URL JÁ FOR UMA IMAGEM
-    */
-
-    if (
-      contentType.startsWith(
-        "image/"
-      )
-    ) {
-
-      return await downloadImageAsDataUrl(
-        finalUrl
-      );
-
-    }
-
-
-    if (
-      !contentType.includes(
-        "text/html"
-      )
-    ) {
 
       return "";
-
     }
 
+    finalUrl = response.url || platformUrl;
 
-    const html =
-      await response.text();
+    const contentType =
+      response.headers.get("content-type") || "";
 
-
-    /*
-      1. OG:IMAGE / TWITTER
-    */
-
-    let imageUrl =
-      extractMetaImage(
-        html,
-        finalUrl
-      );
-
-
-    /*
-      2. PROCURAR IMAGENS
-      DENTRO DA PÁGINA
-    */
-
-    if (!imageUrl) {
-
-      const candidates = [];
-
-      let match;
-
-
-      const imgRegex =
-        /<img[^>]*(?:src|data-src|data-lazy-src|data-original|data-image)\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
-
-      while (
-        (match =
-          imgRegex.exec(html)) !==
-        null
-      ) {
-
-        const src =
-          String(
-            match[1] || ""
-          ).trim();
-
-
-        if (!src) {
-          continue;
-        }
-
-
-        const resolved =
-          resolveImageUrl(
-            src,
-            finalUrl
-          );
-
-
-        if (
-          resolved &&
-          isHttpUrl(resolved)
-        ) {
-
-          const lower =
-            resolved.toLowerCase();
-
-
-          if (
-            lower.includes(
-              "pixel"
-            ) ||
-            lower.includes(
-              "tracking"
-            ) ||
-            lower.includes(
-              "spacer"
-            ) ||
-            lower.includes(
-              "1x1"
-            ) ||
-            lower.includes(
-              "placeholder"
-            ) ||
-            lower.includes(
-              "transparent"
-            )
-          ) {
-
-            continue;
-
-          }
-
-
-          candidates.push(
-            resolved
-          );
-
-        }
-
-      }
-
-
-      /*
-        PRIORIZAR LOGO
-      */
-
-      const logoRegex =
-        /<img[^>]*(?:class|id|alt)\s*=\s*["'][^"']*(?:logo|brand)[^"']*["'][^>]*(?:src|data-src|data-lazy-src|data-original)\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
-
-      while (
-        (match =
-          logoRegex.exec(html)) !==
-        null
-      ) {
-
-        const src =
-          String(
-            match[1] || ""
-          ).trim();
-
-
-        if (!src) {
-          continue;
-        }
-
-
-        const resolved =
-          resolveImageUrl(
-            src,
-            finalUrl
-          );
-
-
-        if (
-          resolved &&
-          isHttpUrl(resolved)
-        ) {
-
-          candidates.unshift(
-            resolved
-          );
-
-        }
-
-      }
-
-
-      /*
-        TENTAR BAIXAR CADA IMAGEM
-      */
-
-      for (
-        const candidate of candidates
-      ) {
-
-        const downloaded =
-          await downloadImageAsDataUrl(
-            candidate
-          );
-
-
-        if (downloaded) {
-
-          return downloaded;
-
-        }
-
-      }
-
+    if (contentType.startsWith("image/")) {
+      return await downloadImageAsDataUrl(finalUrl);
     }
 
+    if (!contentType.includes("text/html")) {
+      return "";
+    }
 
-    /*
-      SE ACHOU OG:IMAGE,
-      BAIXA A IMAGEM
-    */
+    const html = await response.text();
+    const candidates = [];
 
-    if (imageUrl) {
+    function addCandidate(value, priority = 0) {
+      if (!value) return;
 
-      const downloaded =
-        await downloadImageAsDataUrl(
+      value = value.trim();
+
+      if (
+        !value ||
+        /^(data:|blob:|javascript:)/i.test(value)
+      ) {
+        return;
+      }
+
+      let imageUrl;
+
+      try {
+        imageUrl = new URL(value, finalUrl).href;
+      } catch {
+        return;
+      }
+
+      if (!isHttpUrl(imageUrl)) return;
+
+      if (
+        /pixel|tracking|spacer|placeholder|transparent|1x1/i.test(
           imageUrl
+        )
+      ) {
+        return;
+      }
+
+      if (
+        candidates.some(item => item.url === imageUrl)
+      ) {
+        return;
+      }
+
+      candidates.push({
+        url: imageUrl,
+        priority
+      });
+    }
+
+    /*
+      1. PROCURAR IMAGENS NAS TAGS IMG
+    */
+
+    const imgTags =
+      html.match(/<img\b[^>]*>/gi) || [];
+
+    for (const tag of imgTags) {
+      function getAttribute(name) {
+        const regex = new RegExp(
+          "\\b" + name + "\\s*=\\s*[\"']([^\"']+)[\"']",
+          "i"
         );
 
+        const match = tag.match(regex);
 
-      if (downloaded) {
-
-        return downloaded;
-
+        return match ? match[1].trim() : "";
       }
 
+      const description = [
+        getAttribute("alt"),
+        getAttribute("title"),
+        getAttribute("class"),
+        getAttribute("id"),
+        getAttribute("data-testid")
+      ].join(" ").toLowerCase();
+
+      const source =
+        getAttribute("data-src") ||
+        getAttribute("data-lazy-src") ||
+        getAttribute("data-original") ||
+        getAttribute("data-image") ||
+        getAttribute("src");
+
+      const gameKeywords =
+        /slot|game|jogo|games|casino|cassino|pgsoft|ppsoft|pragmatic|fortune|dragon|tiger|fish|gold|jackpot|thumbnail|cover|provider/i;
+
+      let priority = 10;
+
+      if (
+        gameKeywords.test(description + " " + source)
+      ) {
+        priority = 100;
+      }
+
+      if (/logo|brand|favicon|icon/i.test(description)) {
+        priority = 2;
+      }
+
+      addCandidate(source, priority);
+
+      /*
+        IMAGENS RESPONSIVAS SRCSET
+      */
+
+      const srcset = getAttribute("srcset");
+
+      if (srcset) {
+        for (const entry of srcset.split(",")) {
+          const responsiveSource =
+            entry.trim().split(/\s+/)[0];
+
+          addCandidate(
+            responsiveSource,
+            gameKeywords.test(
+              description + " " + responsiveSource
+            ) ? 90 : 5
+          );
+        }
+      }
     }
 
-/*
-  PLANO B AUTOMÁTICO:
-  BAIXAR UMA PRÉ-VISUALIZAÇÃO
-  DA PÁGINA DA PLATAFORMA
-*/
-
-try {
-
-  const screenshotUrl =
-    "https://s.wordpress.com/mshots/v1/" +
-    encodeURIComponent(platformUrl) +
-    "?w=600";
-
-  console.log(
-    "Tentando imagem alternativa:",
-    platformUrl
-  );
-
-  const screenshot =
-    await downloadImageAsDataUrl(
-      screenshotUrl
-    );
-
-  if (screenshot) {
-
-    console.log(
-      "Pré-visualização baixada com sucesso."
-    );
-
-    return screenshot;
-
-  }
-
-} catch (error) {
-
-  console.log(
-    "Pré-visualização indisponível:",
-    error.message
-  );
-
-}
-    
     /*
-      ÚLTIMA TENTATIVA:
-      FAVICON DA PRÓPRIA PLATAFORMA
+      2. PROCURAR IMAGENS OG E TWITTER
+    */
+
+    const metaTags =
+      html.match(/<meta\b[^>]*>/gi) || [];
+
+    for (const tag of metaTags) {
+      if (!/(og:image|twitter:image)/i.test(tag)) {
+        continue;
+      }
+
+      const match = tag.match(
+        /\bcontent\s*=\s*["']([^"']+)["']/i
+      );
+
+      if (match) {
+        addCandidate(match[1], 20);
+      }
+    }
+
+    /*
+      3. PROCURAR LINKS DE IMAGENS NO HTML
+    */
+
+    const imageRegex =
+      /(?:https?:)?\/\/[^"'()\s<>]+?\.(?:png|jpe?g|webp|gif)(?:\?[^"'()\s<>]*)?|(?:\/|\.\/|\.\.\/)[^"'()\s<>]+?\.(?:png|jpe?g|webp|gif)(?:\?[^"'()\s<>]*)?/gi;
+
+    let match;
+
+    while ((match = imageRegex.exec(html)) !== null) {
+      const source = match[0];
+
+      addCandidate(
+        source,
+        /slot|game|jogo|casino|fortune|dragon|tiger|pgsoft|pragmatic/i.test(
+          source
+        ) ? 80 : 4
+      );
+    }
+
+    /*
+      4. TESTAR AS MELHORES IMAGENS
+    */
+
+    candidates.sort(
+      (a, b) => b.priority - a.priority
+    );
+
+    for (const candidate of candidates.slice(0, 12)) {
+      try {
+        const image =
+          await downloadImageAsDataUrl(candidate.url);
+
+        if (image) {
+          console.log(
+            "Imagem encontrada:",
+            candidate.url
+          );
+
+          return image;
+        }
+      } catch (error) {
+        console.log(
+          "Imagem não acessível:",
+          candidate.url
+        );
+      }
+    }
+
+    /*
+      5. TENTAR O FAVICON DO SITE
     */
 
     try {
-
-      const origin =
-        new URL(
-          finalUrl
-        ).origin;
-
+      const origin = new URL(finalUrl).origin;
 
       const favicon =
-        origin +
-        "/favicon.ico";
-
-
-      const downloaded =
         await downloadImageAsDataUrl(
-          favicon
+          origin + "/favicon.ico"
         );
 
-
-      if (downloaded) {
-
-        return downloaded;
-
+      if (favicon) {
+        return favicon;
       }
-
     } catch (error) {
-
       console.log(
-        "Erro no favicon:",
+        "Favicon indisponível:",
         error.message
       );
-
     }
 
+    console.log(
+      "Nenhuma imagem encontrada:",
+      platformUrl
+    );
 
     return "";
-
-
   } catch (error) {
-
     console.log(
-      "Erro ao buscar imagem:",
+      "Erro na busca automática:",
       error.message
     );
 
-
     return "";
-
   }
-
 }
+
 
 
 /* =========================
