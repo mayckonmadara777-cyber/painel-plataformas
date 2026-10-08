@@ -1,43 +1,50 @@
 require("dotenv").config();
 
 const express = require("express");
-const pg = require("pg");
+const path = require("path");
+const cookieParser = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
-const path = require("path");
+const { Pool } = require("pg");
 
 const app = express();
-const { Pool } = pg;
-
 const PORT = process.env.PORT || 10000;
-const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_PHONE = normalizePhone(process.env.ADMIN_PHONE || "");
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
-if (!process.env.DATABASE_URL || !JWT_SECRET || !ADMIN_PHONE || !ADMIN_PASSWORD) {
-  console.warn("ATENÇÃO: configure DATABASE_URL, JWT_SECRET, ADMIN_PHONE e ADMIN_PASSWORD no Render.");
+for (const key of [
+  "DATABASE_URL",
+  "JWT_SECRET",
+  "ADMIN_PHONE",
+  "ADMIN_PASSWORD"
+]) {
+  if (!process.env[key]) {
+    console.error(`Variável obrigatória ausente: ${key}`);
+    process.exit(1);
+  }
 }
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("localhost")
-    ? { rejectUnauthorized: false }
-    : false
+  ssl: process.env.DATABASE_URL.includes("localhost")
+    ? false
+    : { rejectUnauthorized: false }
 });
 
 app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
 
 function normalizePhone(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
-function signUser(user) {
+function createToken(user) {
   return jwt.sign(
-    { id: user.id, phone: user.phone, role: user.role },
-    JWT_SECRET,
+    {
+      id: user.id,
+      phone: user.phone,
+      role: user.role
+    },
+    process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 }
@@ -45,22 +52,33 @@ function signUser(user) {
 function auth(req, res, next) {
   try {
     const token = req.cookies.panel_token;
-    if (!token) return res.status(401).json({ error: "Não autenticado." });
-    req.user = jwt.verify(token, JWT_SECRET);
+
+    if (!token) {
+      return res.status(401).json({
+        error: "Não autenticado."
+      });
+    }
+
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch {
-    return res.status(401).json({ error: "Sessão expirada." });
+    return res.status(401).json({
+      error: "Sessão inválida ou expirada."
+    });
   }
 }
 
 function adminOnly(req, res, next) {
   if (req.user?.role !== "admin") {
-    return res.status(403).json({ error: "Acesso somente para administrador." });
+    return res.status(403).json({
+      error: "Acesso restrito ao administrador."
+    });
   }
+
   next();
 }
 
-async function initDb() {
+async function initDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -72,7 +90,7 @@ async function initDb() {
 
     CREATE TABLE IF NOT EXISTS platforms (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(120) NOT NULL,
+      name VARCHAR(150) NOT NULL,
       url TEXT NOT NULL,
       description TEXT DEFAULT '',
       image_url TEXT DEFAULT '',
@@ -83,47 +101,102 @@ async function initDb() {
     ON platforms(created_at DESC);
   `);
 
+  const adminPhone = normalizePhone(process.env.ADMIN_PHONE);
+  const adminPassword = String(process.env.ADMIN_PASSWORD);
+
   const existing = await pool.query(
     "SELECT id FROM users WHERE phone = $1 LIMIT 1",
-    [ADMIN_PHONE]
+    [adminPhone]
   );
 
-  if (existing.rowCount === 0 && ADMIN_PHONE && ADMIN_PASSWORD) {
-    const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+  if (!existing.rowCount) {
+    const passwordHash = await bcrypt.hash(adminPassword, 12);
+
     await pool.query(
-      "INSERT INTO users (phone, password_hash, role) VALUES ($1, $2, 'admin')",
-      [ADMIN_PHONE, hash]
+      `INSERT INTO users
+       (phone, password_hash, role)
+       VALUES ($1, $2, 'admin')`,
+      [adminPhone, passwordHash]
     );
-    console.log("Administrador criado:", ADMIN_PHONE);
+
+    console.log("Administrador criado com sucesso.");
+  } else {
+    await pool.query(
+      "UPDATE users SET role = 'admin' WHERE phone = $1",
+      [adminPhone]
+    );
   }
 }
 
-app.post("/api/login", async (req, res) => {
+/* =========================
+   TESTE DO SERVIDOR
+========================= */
+
+app.get("/api/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
+
+    res.json({
+      ok: true,
+      database: true
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      ok: false,
+      database: false
+    });
+  }
+});
+
+/* =========================
+   LOGIN
+========================= */
+
+app.post("/api/auth/login", async (req, res) => {
   try {
     const phone = normalizePhone(req.body.phone);
     const password = String(req.body.password || "");
 
     if (!phone || !password) {
-      return res.status(400).json({ error: "Informe número e senha." });
+      return res.status(400).json({
+        error: "Informe telefone e senha."
+      });
     }
 
     const result = await pool.query(
-      "SELECT id, phone, password_hash, role FROM users WHERE phone = $1 LIMIT 1",
+      `SELECT
+        id,
+        phone,
+        password_hash,
+        role
+       FROM users
+       WHERE phone = $1
+       LIMIT 1`,
       [phone]
     );
 
     if (!result.rowCount) {
-      return res.status(401).json({ error: "Número ou senha incorretos." });
+      return res.status(401).json({
+        error: "Telefone ou senha inválidos."
+      });
     }
 
     const user = result.rows[0];
-    const valid = await bcrypt.compare(password, user.password_hash);
 
-    if (!valid) {
-      return res.status(401).json({ error: "Número ou senha incorretos." });
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    if (!validPassword) {
+      return res.status(401).json({
+        error: "Telefone ou senha inválidos."
+      });
     }
 
-    const token = signUser(user);
+    const token = createToken(user);
 
     res.cookie("panel_token", token, {
       httpOnly: true,
@@ -134,166 +207,411 @@ app.post("/api/login", async (req, res) => {
 
     res.json({
       ok: true,
-      user: { id: user.id, phone: user.phone, role: user.role }
+      user: {
+        id: user.id,
+        phone: user.phone,
+        role: user.role
+      }
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Erro interno ao entrar." });
+
+    res.status(500).json({
+      error: "Erro interno no login."
+    });
   }
 });
 
-app.post("/api/logout", (req, res) => {
+app.post("/api/auth/logout", (req, res) => {
   res.clearCookie("panel_token");
-  res.json({ ok: true });
+
+  res.json({
+    ok: true
+  });
 });
 
-app.get("/api/me", auth, async (req, res) => {
-  res.json({ user: req.user });
+app.get("/api/auth/me", auth, (req, res) => {
+  res.json({
+    user: req.user
+  });
 });
+
+/* =========================
+   PLATAFORMAS
+========================= */
 
 app.get("/api/platforms", auth, async (req, res) => {
-  const result = await pool.query(`
-    SELECT id, name, url, description, image_url, created_at
-    FROM platforms
-    ORDER BY created_at DESC
-  `);
-  res.json({ platforms: result.rows });
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        name,
+        url,
+        description,
+        image_url,
+        created_at
+      FROM platforms
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      platforms: result.rows
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Não foi possível carregar as plataformas."
+    });
+  }
 });
 
-app.post("/api/admin/users", auth, adminOnly, async (req, res) => {
+app.post("/api/platforms", auth, adminOnly, async (req, res) => {
+  try {
+    const {
+      name,
+      url,
+      description = "",
+      image_url = ""
+    } = req.body;
+
+    if (!name?.trim() || !url?.trim()) {
+      return res.status(400).json({
+        error: "Nome e URL são obrigatórios."
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO platforms
+       (name, url, description, image_url)
+       VALUES ($1, $2, $3, $4)
+       RETURNING
+       id,
+       name,
+       url,
+       description,
+       image_url,
+       created_at`,
+      [
+        name.trim(),
+        url.trim(),
+        String(description).trim(),
+        String(image_url).trim()
+      ]
+    );
+
+    res.status(201).json({
+      platform: result.rows[0]
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao adicionar plataforma."
+    });
+  }
+});
+
+app.put("/api/platforms/:id", auth, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const {
+      name,
+      url,
+      description = "",
+      image_url = ""
+    } = req.body;
+
+    if (!Number.isInteger(id) || !name?.trim() || !url?.trim()) {
+      return res.status(400).json({
+        error: "Dados inválidos."
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE platforms
+       SET
+        name = $1,
+        url = $2,
+        description = $3,
+        image_url = $4
+       WHERE id = $5
+       RETURNING
+        id,
+        name,
+        url,
+        description,
+        image_url,
+        created_at`,
+      [
+        name.trim(),
+        url.trim(),
+        String(description).trim(),
+        String(image_url).trim(),
+        id
+      ]
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({
+        error: "Plataforma não encontrada."
+      });
+    }
+
+    res.json({
+      platform: result.rows[0]
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao editar plataforma."
+    });
+  }
+});
+
+app.delete("/api/platforms/:id", auth, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const result = await pool.query(
+      `DELETE FROM platforms
+       WHERE id = $1
+       RETURNING id`,
+      [id]
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({
+        error: "Plataforma não encontrada."
+      });
+    }
+
+    res.json({
+      ok: true
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao excluir plataforma."
+    });
+  }
+});
+
+/* =========================
+   CLIENTES
+========================= */
+
+app.get("/api/clients", auth, adminOnly, async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        phone,
+        created_at
+      FROM users
+      WHERE role = 'client'
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      clients: result.rows
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao carregar clientes."
+    });
+  }
+});
+
+app.post("/api/clients", auth, adminOnly, async (req, res) => {
   try {
     const phone = normalizePhone(req.body.phone);
     const password = String(req.body.password || "");
 
     if (!phone || password.length < 4) {
-      return res.status(400).json({ error: "Número e senha são obrigatórios. A senha deve ter pelo menos 4 caracteres." });
+      return res.status(400).json({
+        error: "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
+      });
     }
 
-    const hash = await bcrypt.hash(password, 12);
+    const exists = await pool.query(
+      "SELECT id FROM users WHERE phone = $1",
+      [phone]
+    );
+
+    if (exists.rowCount) {
+      return res.status(409).json({
+        error: "Esse telefone já está cadastrado."
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
 
     const result = await pool.query(
-      `INSERT INTO users (phone, password_hash, role)
+      `INSERT INTO users
+       (phone, password_hash, role)
        VALUES ($1, $2, 'client')
-       RETURNING id, phone, role, created_at`,
-      [phone, hash]
+       RETURNING id, phone, created_at`,
+      [phone, passwordHash]
     );
 
-    res.status(201).json({ user: result.rows[0] });
+    res.status(201).json({
+      client: result.rows[0]
+    });
   } catch (error) {
-    if (error.code === "23505") {
-      return res.status(409).json({ error: "Esse número já está cadastrado." });
-    }
     console.error(error);
-    res.status(500).json({ error: "Não foi possível cadastrar o cliente." });
+
+    res.status(500).json({
+      error: "Erro ao criar cliente."
+    });
   }
 });
 
-app.get("/api/admin/users", auth, adminOnly, async (req, res) => {
-  const result = await pool.query(`
-    SELECT id, phone, role, created_at
-    FROM users
-    WHERE role = 'client'
-    ORDER BY created_at DESC
-  `);
-  res.json({ users: result.rows });
-});
-
-app.delete("/api/admin/users/:id", auth, adminOnly, async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return res.status(400).json({ error: "Cliente inválido." });
-
-  await pool.query("DELETE FROM users WHERE id = $1 AND role = 'client'", [id]);
-  res.json({ ok: true });
-});
-
-app.post("/api/admin/platforms", auth, adminOnly, async (req, res) => {
-  try {
-    const name = String(req.body.name || "").trim();
-    const url = String(req.body.url || "").trim();
-    const description = String(req.body.description || "").trim();
-    const imageUrl = String(req.body.image_url || "").trim();
-
-    if (!name || !url) {
-      return res.status(400).json({ error: "Nome e link são obrigatórios." });
-    }
-
-    const parsed = new URL(url);
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      return res.status(400).json({ error: "O link precisa começar com http:// ou https://." });
-    }
-
-    if (imageUrl) {
-      const imageParsed = new URL(imageUrl);
-      if (!["http:", "https:"].includes(imageParsed.protocol)) {
-        return res.status(400).json({ error: "A imagem precisa ser uma URL http/https." });
-      }
-    }
-
-    const result = await pool.query(
-      `INSERT INTO platforms (name, url, description, image_url)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, url, description, image_url, created_at`,
-      [name, url, description, imageUrl]
-    );
-
-    res.status(201).json({ platform: result.rows[0] });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Não foi possível cadastrar a plataforma." });
-  }
-});
-
-app.put("/api/admin/platforms/:id", auth, adminOnly, async (req, res) => {
+app.put("/api/clients/:id", auth, adminOnly, async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const name = String(req.body.name || "").trim();
-    const url = String(req.body.url || "").trim();
-    const description = String(req.body.description || "").trim();
-    const imageUrl = String(req.body.image_url || "").trim();
+    const phone = normalizePhone(req.body.phone);
+    const password = String(req.body.password || "");
 
-    if (!Number.isInteger(id) || !name || !url) {
-      return res.status(400).json({ error: "Dados inválidos." });
+    if (!Number.isInteger(id) || !phone) {
+      return res.status(400).json({
+        error: "Dados inválidos."
+      });
     }
 
-    new URL(url);
-    if (imageUrl) new URL(imageUrl);
-
-    const result = await pool.query(
-      `UPDATE platforms
-       SET name = $1, url = $2, description = $3, image_url = $4
-       WHERE id = $5
-       RETURNING id, name, url, description, image_url, created_at`,
-      [name, url, description, imageUrl, id]
+    const duplicate = await pool.query(
+      `SELECT id
+       FROM users
+       WHERE phone = $1
+       AND id <> $2`,
+      [phone, id]
     );
 
-    if (!result.rowCount) return res.status(404).json({ error: "Plataforma não encontrada." });
-    res.json({ platform: result.rows[0] });
-  } catch {
-    res.status(400).json({ error: "Confira os dados da plataforma." });
+    if (duplicate.rowCount) {
+      return res.status(409).json({
+        error: "Esse telefone já está em uso."
+      });
+    }
+
+    let result;
+
+    if (password) {
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      result = await pool.query(
+        `UPDATE users
+         SET
+          phone = $1,
+          password_hash = $2
+         WHERE id = $3
+         AND role = 'client'
+         RETURNING id, phone, created_at`,
+        [phone, passwordHash, id]
+      );
+    } else {
+      result = await pool.query(
+        `UPDATE users
+         SET phone = $1
+         WHERE id = $2
+         AND role = 'client'
+         RETURNING id, phone, created_at`,
+        [phone, id]
+      );
+    }
+
+    if (!result.rowCount) {
+      return res.status(404).json({
+        error: "Cliente não encontrado."
+      });
+    }
+
+    res.json({
+      client: result.rows[0]
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao editar cliente."
+    });
   }
 });
 
-app.delete("/api/admin/platforms/:id", auth, adminOnly, async (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return res.status(400).json({ error: "Plataforma inválida." });
+app.delete("/api/clients/:id", auth, adminOnly, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
 
-  await pool.query("DELETE FROM platforms WHERE id = $1", [id]);
-  res.json({ ok: true });
+    const result = await pool.query(
+      `DELETE FROM users
+       WHERE id = $1
+       AND role = 'client'
+       RETURNING id`,
+      [id]
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({
+        error: "Cliente não encontrado."
+      });
+    }
+
+    res.json({
+      ok: true
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Erro ao excluir cliente."
+    });
+  }
 });
 
-// Fallback da SPA sem usar app.get("*"), evitando o erro PathError do Express 5.
+/* =========================
+   ARQUIVOS DO PAINEL
+========================= */
+
+app.use(
+  express.static(__dirname, {
+    index: "index.html"
+  })
+);
+
+/*
+  IMPORTANTE:
+  Express 5 não deve usar app.get("*").
+  Este fallback evita o erro:
+  PathError: Missing parameter name
+*/
 app.use((req, res, next) => {
-  if (req.method === "GET" && !req.path.startsWith("/api/")) {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
+  if (
+    req.method === "GET" &&
+    !req.path.startsWith("/api/")
+  ) {
+    return res.sendFile(
+      path.join(__dirname, "index.html")
+    );
   }
+
   next();
 });
 
-initDb()
+/* =========================
+   INICIAR SERVIDOR
+========================= */
+
+initDatabase()
   .then(() => {
-    app.listen(PORT, () => console.log(`Painel rodando na porta ${PORT}`));
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Servidor rodando na porta ${PORT}`);
+    });
   })
-  .catch((error) => {
-    console.error("Falha ao iniciar banco:", error);
+  .catch(error => {
+    console.error("Erro ao iniciar banco:", error);
     process.exit(1);
   });
