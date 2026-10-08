@@ -36,6 +36,9 @@ body{
   margin:0;
   padding:0;
   min-height:100%;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
 }
 
 body{
@@ -691,19 +694,11 @@ button{
 
       <div class="tabs">
 
-        <button
-          class="tabBtn active"
-          onclick="tab('plats',this)"
-        >
-          Plataformas
-        </button>
-
-        <button
-          class="tabBtn"
-          onclick="tab('clients',this)"
-        >
-          Clientes
-        </button>
+  <button
+    class="tabBtn active"
+  >
+    Plataformas
+  </button>
 
       </div>
 
@@ -731,34 +726,7 @@ button{
         ></div>
 
       </div>
-
-
-      <div
-        id="clients"
-        class="hidden"
-      >
-
-        <div class="adminHead">
-
-          <h2>
-            Gerenciar clientes
-          </h2>
-
-          <button
-            class="addBtn"
-            onclick="clientModal()"
-          >
-            + ADICIONAR
-          </button>
-
-        </div>
-
-        <div
-          id="clientList"
-          class="clientList"
-        ></div>
-
-      </div>
+      
 
     </section>
 
@@ -1383,31 +1351,40 @@ function render(){
 
 
   const recentData =
-    data.filter(
-      platform => {
+  data.filter(
+    platform => {
 
-        const date =
-          new Date(
-            platform.created_at ||
-            platform.createdAt ||
-            0
-          ).getTime();
+      const created =
+        platform.created_at ||
+        platform.createdAt;
 
+      if(!created){
 
-        if(!date){
-
-          return false;
-
-        }
-
-
-        return (
-          now - date <=
-          SEVEN_DAYS
-        );
+        return false;
 
       }
-    );
+
+      const date =
+        new Date(created).getTime();
+
+      if(
+        Number.isNaN(date)
+      ){
+
+        return false;
+
+      }
+
+      const age =
+        now - date;
+
+      return (
+        age >= 0 &&
+        age <= SEVEN_DAYS
+      );
+
+    }
+  );
 
 
   if(recentData.length){
