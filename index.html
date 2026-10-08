@@ -51,16 +51,23 @@ body{
     );
   color:var(--txt);
   font-family:Arial,Helvetica,sans-serif;
+  overflow-x:hidden;
 }
 
 button,
 input,
 textarea{
   font:inherit;
+  max-width:100%;
 }
 
 button{
   cursor:pointer;
+}
+
+img,
+a{
+  max-width:100%;
 }
 
 .hidden{
@@ -172,6 +179,9 @@ button{
 
 #app{
   min-height:100vh;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
 }
 
 .top{
@@ -191,12 +201,14 @@ button{
   display:flex;
   align-items:center;
   gap:14px;
+  min-width:0;
 }
 
 .brand{
   font-size:21px;
   font-weight:900;
   flex:1;
+  min-width:0;
 }
 
 .brand span{
@@ -207,6 +219,7 @@ button{
   color:var(--muted);
   font-size:12px;
   font-weight:bold;
+  white-space:nowrap;
 }
 
 .topBtn{
@@ -216,6 +229,7 @@ button{
   background:#120d19;
   color:var(--txt);
   font-weight:bold;
+  max-width:100%;
 }
 
 .container{
@@ -223,6 +237,7 @@ button{
   max-width:1200px;
   margin:auto;
   padding:25px 18px 50px;
+  min-width:0;
 }
 
 .hero{
@@ -249,6 +264,8 @@ button{
   grid-template-columns:
     repeat(auto-fill,minmax(250px,1fr));
   gap:16px;
+  width:100%;
+  min-width:0;
 }
 
 
@@ -266,6 +283,8 @@ button{
   overflow:hidden;
   box-shadow:var(--shadow);
   transition:.2s;
+  min-width:0;
+  max-width:100%;
 }
 
 .card:hover{
@@ -280,6 +299,7 @@ button{
   align-items:center;
   justify-content:center;
   overflow:hidden;
+  width:100%;
 }
 
 .thumb img{
@@ -295,11 +315,14 @@ button{
 
 .body{
   padding:17px;
+  min-width:0;
+  overflow:hidden;
 }
 
 .body h3{
   margin:0 0 10px;
   font-size:19px;
+  overflow-wrap:anywhere;
 }
 
 .desc{
@@ -308,17 +331,22 @@ button{
   line-height:1.5;
   min-height:42px;
   white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
 }
 
 .actions{
   display:flex;
   gap:8px;
   margin-top:15px;
+  flex-wrap:wrap;
+  width:100%;
 }
 
 .actions a,
 .actions button{
-  flex:1;
+  flex:1 1 100px;
+  min-width:0;
   text-align:center;
   text-decoration:none;
   border:0;
@@ -348,6 +376,7 @@ button{
   padding:35px 15px;
   border:1px dashed var(--border);
   border-radius:16px;
+  overflow-wrap:anywhere;
 }
 
 
@@ -359,6 +388,9 @@ button{
   border:1px solid var(--border);
   border-radius:18px;
   padding:18px;
+  min-width:0;
+  max-width:100%;
+  overflow:hidden;
 }
 
 .tabs{
@@ -391,6 +423,7 @@ button{
   align-items:center;
   gap:10px;
   margin-bottom:15px;
+  min-width:0;
 }
 
 .adminHead h2{
@@ -411,49 +444,7 @@ button{
   font-weight:900;
 }
 
-.clientList{
-  display:grid;
-  gap:10px;
-}
-
-.clientItem{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  background:#0d0912;
-  border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px;
-}
-
-.clientInfo strong{
-  display:block;
-}
-
-.clientInfo small{
-  color:var(--muted);
-}
-
-.clientActions{
-  display:flex;
-  gap:7px;
-}
-
-.smallBtn{
-  border:1px solid var(--border);
-  background:#17101f;
-  color:white;
-  border-radius:8px;
-  padding:8px 10px;
-}
-
-.smallBtn.red{
-  background:#35101c;
-  border-color:rgba(255,65,108,.35);
-}
-
-
+    
 /* MODAL */
 
 #modal{
@@ -465,6 +456,7 @@ button{
   align-items:center;
   justify-content:center;
   padding:18px;
+  overflow:auto;
 }
 
 .modalBox{
@@ -476,6 +468,7 @@ button{
   border:1px solid var(--border);
   border-radius:20px;
   padding:20px;
+  min-width:0;
 }
 
 .modalTop{
@@ -489,11 +482,13 @@ button{
 .modalTop h2{
   margin:0;
   font-size:20px;
+  overflow-wrap:anywhere;
 }
 
 .closeBtn{
   width:36px;
   height:36px;
+  min-width:36px;
   border-radius:10px;
   border:1px solid var(--border);
   background:#170f20;
@@ -505,10 +500,12 @@ button{
   display:flex;
   gap:8px;
   margin-top:15px;
+  flex-wrap:wrap;
 }
 
 .modalActions button{
-  flex:1;
+  flex:1 1 120px;
+  min-width:0;
 }
 
 
@@ -518,14 +515,25 @@ button{
 
   .topIn{
     flex-wrap:wrap;
+    padding:12px 14px;
   }
 
   .brand{
     min-width:100%;
+    font-size:19px;
   }
 
   .role{
     flex:1;
+    min-width:0;
+  }
+
+  .topBtn{
+    white-space:nowrap;
+  }
+
+  .container{
+    padding:20px 14px 40px;
   }
 
   .hero h1{
@@ -536,17 +544,31 @@ button{
     grid-template-columns:1fr;
   }
 
-  .clientItem{
-    align-items:flex-start;
+  .adminHead{
+    align-items:stretch;
     flex-direction:column;
   }
 
-  .clientActions{
+  .addBtn{
     width:100%;
   }
 
-  .clientActions button{
-    flex:1;
+  .tabs{
+    width:100%;
+  }
+
+  .tabBtn{
+    width:100%;
+  }
+
+  .actions{
+    flex-direction:column;
+  }
+
+  .actions a,
+  .actions button{
+    width:100%;
+    flex:1 1 auto;
   }
 
 }
@@ -694,11 +716,12 @@ button{
 
       <div class="tabs">
 
-  <button
-    class="tabBtn active"
-  >
-    Plataformas
-  </button>
+        <button
+          class="tabBtn active"
+          type="button"
+        >
+          Plataformas
+        </button>
 
       </div>
 
@@ -726,7 +749,6 @@ button{
         ></div>
 
       </div>
-      
 
     </section>
 
@@ -795,8 +817,6 @@ let me = null;
 let data = [];
 
 let editingPlatformId = null;
-
-let editingClientId = null;
 
 
 const $ = x =>
@@ -912,7 +932,7 @@ function show(){
     .remove("hidden");
 
 
-  if(me){
+  if(me && me.role === "admin"){
 
     $("adminAccess")
       .classList
@@ -923,26 +943,20 @@ function show(){
       .remove("hidden");
 
     $("role").textContent =
-      me.role === "admin"
-        ? "ADMINISTRADOR"
-        : "CLIENTE";
+      "ADMINISTRADOR";
 
 
-    if(me.role === "admin"){
+    $("admin")
+      .classList
+      .remove("hidden");
 
-      $("admin")
-        .classList
-        .remove("hidden");
+    $("client")
+      .classList
+      .remove("hidden");
 
-      $("client")
-        .classList
-        .add("hidden");
+    load();
 
-      load();
-
-      return;
-
-    }
+    return;
 
   }
 
@@ -1065,53 +1079,9 @@ async function logout(){
 
   location.reload();
 
-}
-
-
-function tab(
-  id,
-  button
-){
-
-  $("plats")
-    .classList
-    .add("hidden");
-
-  $("clients")
-    .classList
-    .add("hidden");
-
-
-  document
-    .querySelectorAll(".tabBtn")
-    .forEach(
-      b =>
-        b.classList.remove("active")
-    );
-
-
-  $(id)
-    .classList
-    .remove("hidden");
-
-
-  if(button){
-
-    button
-      .classList
-      .add("active");
-
   }
 
-
-  if(id === "clients"){
-
-    clients();
-
-  }
-
-}
-
+     
 async function load(){
 
   try{
@@ -1147,9 +1117,7 @@ async function load(){
 
     $("all").innerHTML = "";
 
-    if(
-      $("adminGrid")
-    ){
+    if($("adminGrid")){
 
       $("adminGrid").innerHTML =
         `
@@ -1178,11 +1146,9 @@ function card(
     platform.image_url ||
     "";
 
-
   const description =
     platform.description ||
     "Acesse esta plataforma.";
-
 
   const safeUrl =
     esc(platform.url);
@@ -1245,9 +1211,7 @@ function card(
 
 
           <div class="desc">
-
             ${esc(description)}
-
           </div>
 
 
@@ -1263,6 +1227,7 @@ function card(
 
 
             <button
+              type="button"
               onclick="platformModal(${Number(platform.id)})"
             >
               EDITAR
@@ -1270,6 +1235,7 @@ function card(
 
 
             <button
+              type="button"
               onclick="delP(${Number(platform.id)})"
             >
               EXCLUIR
@@ -1305,9 +1271,7 @@ function card(
 
 
         <div class="desc">
-
           ${esc(description)}
-
         </div>
 
 
@@ -1351,40 +1315,43 @@ function render(){
 
 
   const recentData =
-  data.filter(
-    platform => {
+    data.filter(
+      platform => {
 
-      const created =
-        platform.created_at ||
-        platform.createdAt;
+        const created =
+          platform.created_at ||
+          platform.createdAt;
 
-      if(!created){
+        if(!created){
 
-        return false;
+          return false;
+
+        }
+
+
+        const date =
+          new Date(created)
+            .getTime();
+
+
+        if(Number.isNaN(date)){
+
+          return false;
+
+        }
+
+
+        const age =
+          now - date;
+
+
+        return (
+          age >= 0 &&
+          age <= SEVEN_DAYS
+        );
 
       }
-
-      const date =
-        new Date(created).getTime();
-
-      if(
-        Number.isNaN(date)
-      ){
-
-        return false;
-
-      }
-
-      const age =
-        now - date;
-
-      return (
-        age >= 0 &&
-        age <= SEVEN_DAYS
-      );
-
-    }
-  );
+    );
 
 
   if(recentData.length){
@@ -1479,9 +1446,6 @@ function closeM(){
   editingPlatformId =
     null;
 
-  editingClientId =
-    null;
-
 }
 
 
@@ -1573,7 +1537,7 @@ async function platformModal(
               platform?.url ||
               ""
             )}"
-            placeholder="https://..."
+            placeholder="https://exemplo.com"
             required
           >
 
@@ -1587,7 +1551,7 @@ async function platformModal(
           </label>
 
           <textarea
-            id="pDescription"
+            id="pDesc"
             placeholder="Descrição da plataforma"
           >${esc(
             platform?.description ||
@@ -1600,19 +1564,18 @@ async function platformModal(
         <div class="modalActions">
 
           <button
+            type="submit"
+            class="primary"
+          >
+            SALVAR
+          </button>
+
+          <button
             type="button"
             class="secondary"
             onclick="closeM()"
           >
             CANCELAR
-          </button>
-
-
-          <button
-            type="submit"
-            class="primary"
-          >
-            SALVAR
           </button>
 
         </div>
@@ -1626,9 +1589,16 @@ async function platformModal(
     .classList
     .remove("hidden");
 
-  }
 
- async function savePlatform(e){
+  setTimeout(
+    () => $("pName").focus(),
+    50
+  );
+
+}
+
+    
+async function savePlatform(e){
 
   e.preventDefault();
 
@@ -1646,7 +1616,7 @@ async function platformModal(
 
 
   const description =
-    $("pDescription")
+    $("pDesc")
       .value
       .trim();
 
@@ -1675,17 +1645,22 @@ async function platformModal(
 
   try{
 
+    const payload = {
+      name,
+      url,
+      description
+    };
+
+
     if(editingPlatformId){
 
       await api(
         `/api/platforms/${editingPlatformId}`,
         {
           method:"PUT",
-          body:JSON.stringify({
-            name,
-            url,
-            description
-          })
+          body:JSON.stringify(
+            payload
+          )
         }
       );
 
@@ -1695,11 +1670,9 @@ async function platformModal(
         "/api/platforms",
         {
           method:"POST",
-          body:JSON.stringify({
-            name,
-            url,
-            description
-          })
+          body:JSON.stringify(
+            payload
+          )
         }
       );
 
@@ -1709,11 +1682,6 @@ async function platformModal(
     closeM();
 
     await load();
-
-
-    alert(
-      "Plataforma salva com sucesso!"
-    );
 
 
   }catch(error){
@@ -1733,11 +1701,26 @@ async function platformModal(
 
 async function delP(id){
 
-  if(
-    !confirm(
-      "Tem certeza que deseja excluir esta plataforma?"
-    )
-  ){
+  const platform =
+    data.find(
+      item =>
+        Number(item.id) ===
+        Number(id)
+    );
+
+
+  const name =
+    platform?.name ||
+    "esta plataforma";
+
+
+  const confirmed =
+    confirm(
+      `Tem certeza que deseja excluir "${name}"?`
+    );
+
+
+  if(!confirmed){
 
     return;
 
@@ -1769,414 +1752,24 @@ async function delP(id){
 
 
 /* =========================
-   CLIENTES
+   FECHAR MODAL AO CLICAR FORA
 ========================= */
 
-async function clients(){
+$("modal").addEventListener(
+  "click",
+  event => {
 
-  try{
+    if(
+      event.target ===
+      $("modal")
+    ){
 
-    const result =
-      await api(
-        "/api/admin/clients"
-      );
-
-
-    const list =
-      result.clients ||
-      [];
-
-
-    if(!list.length){
-
-      $("clientList").innerHTML =
-        `
-          <div class="empty">
-            Nenhum cliente cadastrado.
-          </div>
-        `;
-
-      return;
-
-    }
-
-
-    $("clientList").innerHTML =
-      list
-        .map(
-          client => `
-
-            <div class="clientItem">
-
-              <div class="clientInfo">
-
-                <strong>
-                  ${esc(
-                    client.name ||
-                    client.phone ||
-                    "Cliente"
-                  )}
-                </strong>
-
-
-                <small>
-                  Telefone:
-                  ${esc(
-                    client.phone ||
-                    "-"
-                  )}
-                </small>
-
-
-                <small>
-                  Tipo:
-                  ${esc(
-                    client.role ||
-                    "client"
-                  )}
-                </small>
-
-              </div>
-
-
-              <div class="clientActions">
-
-                <button
-                  class="smallBtn"
-                  onclick="clientModal(${Number(client.id)})"
-                >
-                  EDITAR
-                </button>
-
-
-                <button
-                  class="smallBtn red"
-                  onclick="delC(${Number(client.id)})"
-                >
-                  EXCLUIR
-                </button>
-
-              </div>
-
-            </div>
-
-          `
-        )
-        .join("");
-
-  }catch(error){
-
-    $("clientList").innerHTML =
-      `
-        <div class="empty">
-
-          Não foi possível carregar
-          os clientes.
-
-          <br><br>
-
-          ${esc(error.message)}
-
-        </div>
-      `;
-
-  }
-
-}
-
-
-/* =========================
-   MODAL CLIENTE
-========================= */
-
-async function clientModal(
-  id = null
-){
-
-  editingClientId =
-    id;
-
-  let client = null;
-
-
-  if(id){
-
-    try{
-
-      const result =
-        await api(
-          `/api/admin/clients/${id}`
-        );
-
-
-      client =
-        result.client;
-
-
-    }catch{
-
-      try{
-
-        const result =
-          await api(
-            "/api/admin/clients"
-          );
-
-
-        client =
-          (result.clients || [])
-            .find(
-              c =>
-                Number(c.id) ===
-                Number(id)
-            );
-
-
-      }catch{}
+      closeM();
 
     }
 
   }
-
-
-  $("mt").textContent =
-    client
-      ? "Editar cliente"
-      : "Adicionar cliente";
-
-
-  $("mb").innerHTML =
-    `
-
-      <form
-        onsubmit="saveClient(event)"
-      >
-
-        <div class="field">
-
-          <label>
-            Nome
-          </label>
-
-          <input
-            id="cName"
-            value="${esc(
-              client?.name ||
-              ""
-            )}"
-            placeholder="Nome do cliente"
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            Telefone
-          </label>
-
-          <input
-            id="cPhone"
-            type="tel"
-            value="${esc(
-              client?.phone ||
-              ""
-            )}"
-            placeholder="Telefone"
-            required
-          >
-
-        </div>
-
-
-        <div class="field">
-
-          <label>
-            Senha
-          </label>
-
-          <input
-            id="cPassword"
-            type="password"
-            placeholder="${
-              client
-                ? "Deixe vazio para manter"
-                : "Senha"
-            }"
-            ${client ? "" : "required"}
-          >
-
-        </div>
-
-
-        <div class="modalActions">
-
-          <button
-            type="button"
-            class="secondary"
-            onclick="closeM()"
-          >
-            CANCELAR
-          </button>
-
-
-          <button
-            type="submit"
-            class="primary"
-          >
-            SALVAR
-          </button>
-
-        </div>
-
-      </form>
-
-    `;
-
-
-  $("modal")
-    .classList
-    .remove("hidden");
-
-  }
-
- async function saveClient(e){
-
-  e.preventDefault();
-
-
-  const name =
-    $("cName")
-      .value
-      .trim();
-
-
-  const phone =
-    $("cPhone")
-      .value
-      .trim();
-
-
-  const password =
-    $("cPassword")
-      .value;
-
-
-  if(!phone){
-
-    alert(
-      "Digite o telefone."
-    );
-
-    return;
-
-  }
-
-
-  try{
-
-    if(editingClientId){
-
-      const body = {
-        name,
-        phone
-      };
-
-
-      if(password){
-
-        body.password =
-          password;
-
-      }
-
-
-      await api(
-        `/api/admin/clients/${editingClientId}`,
-        {
-          method:"PUT",
-          body:JSON.stringify(body)
-        }
-      );
-
-    }else{
-
-      await api(
-        "/api/admin/clients",
-        {
-          method:"POST",
-          body:JSON.stringify({
-            name,
-            phone,
-            password
-          })
-        }
-      );
-
-    }
-
-
-    closeM();
-
-    await clients();
-
-
-    alert(
-      "Cliente salvo com sucesso!"
-    );
-
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-
-  }
-
-}
-
-
-/* =========================
-   EXCLUIR CLIENTE
-========================= */
-
-async function delC(id){
-
-  if(
-    !confirm(
-      "Tem certeza que deseja excluir este cliente?"
-    )
-  ){
-
-    return;
-
-  }
-
-
-  try{
-
-    await api(
-      `/api/admin/clients/${id}`,
-      {
-        method:"DELETE"
-      }
-    );
-
-
-    await clients();
-
-
-  }catch(error){
-
-    alert(
-      error.message
-    );
-
-  }
-
-}
+);
 
 
 /* =========================
@@ -2223,7 +1816,8 @@ async function boot(){
 
   }
 
-  }
+}
+
 
 boot();
 
@@ -2231,4 +1825,5 @@ boot();
 
 </body>
 
-</html>  
+</html>
+
