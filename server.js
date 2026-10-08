@@ -17,7 +17,9 @@ for (const key of [
   "ADMIN_PASSWORD"
 ]) {
   if (!process.env[key]) {
-    console.error(`Variável obrigatória ausente: ${key}`);
+    console.error(
+      `Variável obrigatória ausente: ${key}`
+    );
     process.exit(1);
   }
 }
@@ -29,13 +31,30 @@ const pool = new Pool({
     : { rejectUnauthorized: false }
 });
 
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.json({
+    limit: "1mb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true
+  })
+);
+
 app.use(cookieParser());
 
+
+/* =========================
+   FUNÇÕES DE AUTENTICAÇÃO
+========================= */
+
 function normalizePhone(value) {
-  return String(value || "").replace(/\D/g, "");
+  return String(value || "")
+    .replace(/\D/g, "");
 }
+
 
 function createToken(user) {
   return jwt.sign(
@@ -45,13 +64,19 @@ function createToken(user) {
       role: user.role
     },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    {
+      expiresIn: "7d"
+    }
   );
 }
 
+
 function auth(req, res, next) {
+
   try {
-    const token = req.cookies.panel_token;
+
+    const token =
+      req.cookies.panel_token;
 
     if (!token) {
       return res.status(401).json({
@@ -59,47 +84,88 @@ function auth(req, res, next) {
       });
     }
 
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
     next();
+
   } catch {
+
     return res.status(401).json({
-      error: "Sessão inválida ou expirada."
+      error:
+        "Sessão inválida ou expirada."
     });
+
   }
 }
 
+
 function adminOnly(req, res, next) {
+
   if (req.user?.role !== "admin") {
+
     return res.status(403).json({
-      error: "Acesso restrito ao administrador."
+      error:
+        "Acesso restrito ao administrador."
     });
+
   }
 
   next();
 }
+
 
 /* =========================
    IMAGEM AUTOMÁTICA
 ========================= */
 
 function isHttpUrl(value) {
+
   try {
-    const parsed = new URL(value);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
+
+    const parsed =
+      new URL(value);
+
+    return (
+      parsed.protocol === "http:" ||
+      parsed.protocol === "https:"
+    );
+
   } catch {
+
     return false;
+
   }
 }
 
-function resolveImageUrl(imageUrl, pageUrl) {
+
+function resolveImageUrl(
+  imageUrl,
+  pageUrl
+) {
+
   try {
-    return new URL(imageUrl, pageUrl).toString();
+
+    return new URL(
+      imageUrl,
+      pageUrl
+    ).toString();
+
   } catch {
+
     return "";
+
   }
 }
 
-function extractMetaImage(html, pageUrl) {
+
+function extractMetaImage(
+  html,
+  pageUrl
+) {
+
   const candidates = [];
 
   const metaRegex =
@@ -107,9 +173,19 @@ function extractMetaImage(html, pageUrl) {
 
   let match;
 
-  while ((match = metaRegex.exec(html)) !== null) {
-    const key = String(match[1]).toLowerCase().trim();
-    const value = String(match[2]).trim();
+  while (
+    (match =
+      metaRegex.exec(html)) !== null
+  ) {
+
+    const key =
+      String(match[1])
+        .toLowerCase()
+        .trim();
+
+    const value =
+      String(match[2])
+        .trim();
 
     if (
       [
@@ -120,16 +196,30 @@ function extractMetaImage(html, pageUrl) {
       ].includes(key) &&
       value
     ) {
+
       candidates.push(value);
+
     }
+
   }
 
-  const metaRegexReverse =
+
+  const metaReverse =
     /<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
-  while ((match = metaRegexReverse.exec(html)) !== null) {
-    const value = String(match[1]).trim();
-    const key = String(match[2]).toLowerCase().trim();
+  while (
+    (match =
+      metaReverse.exec(html)) !== null
+  ) {
+
+    const value =
+      String(match[1])
+        .trim();
+
+    const key =
+      String(match[2])
+        .toLowerCase()
+        .trim();
 
     if (
       [
@@ -140,139 +230,251 @@ function extractMetaImage(html, pageUrl) {
       ].includes(key) &&
       value
     ) {
+
       candidates.push(value);
+
     }
+
   }
+
 
   const linkRegex =
-    /<link[^>]+(?:rel)\s*=\s*["']([^"']+)["'][^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
+    /<link[^>]+rel\s*=\s*["']([^"']+)["'][^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
-  while ((match = linkRegex.exec(html)) !== null) {
-    const rel = String(match[1]).toLowerCase();
-    const href = String(match[2]).trim();
+  while (
+    (match =
+      linkRegex.exec(html)) !== null
+  ) {
+
+    const rel =
+      String(match[1])
+        .toLowerCase();
+
+    const href =
+      String(match[2])
+        .trim();
 
     if (
-      rel.includes("apple-touch-icon") ||
+      rel.includes(
+        "apple-touch-icon"
+      ) ||
       rel === "icon" ||
-      rel.includes("shortcut icon")
+      rel.includes(
+        "shortcut icon"
+      )
     ) {
+
       if (href) {
         candidates.push(href);
       }
+
     }
+
   }
 
-  const linkRegexReverse =
-    /<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+(?:rel)\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
-  while ((match = linkRegexReverse.exec(html)) !== null) {
-    const href = String(match[1]).trim();
-    const rel = String(match[2]).toLowerCase();
+  const linkReverse =
+    /<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+  while (
+    (match =
+      linkReverse.exec(html)) !== null
+  ) {
+
+    const href =
+      String(match[1])
+        .trim();
+
+    const rel =
+      String(match[2])
+        .toLowerCase();
 
     if (
-      rel.includes("apple-touch-icon") ||
+      rel.includes(
+        "apple-touch-icon"
+      ) ||
       rel === "icon" ||
-      rel.includes("shortcut icon")
+      rel.includes(
+        "shortcut icon"
+      )
     ) {
+
       if (href) {
         candidates.push(href);
       }
+
     }
+
   }
 
-  for (const candidate of candidates) {
-    const resolved = resolveImageUrl(candidate, pageUrl);
 
-    if (resolved && isHttpUrl(resolved)) {
+  for (
+    const candidate of candidates
+  ) {
+
+    const resolved =
+      resolveImageUrl(
+        candidate,
+        pageUrl
+      );
+
+    if (
+      resolved &&
+      isHttpUrl(resolved)
+    ) {
+
       return resolved;
+
     }
+
   }
 
   return "";
 }
 
-async function findPlatformImage(platformUrl) {
-  if (!isHttpUrl(platformUrl)) {
+
+async function findPlatformImage(
+  platformUrl
+) {
+
+  if (
+    !isHttpUrl(platformUrl)
+  ) {
     return "";
   }
 
   try {
-    const controller = new AbortController();
 
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 10000);
+    const controller =
+      new AbortController();
 
-    const response = await fetch(platformUrl, {
-      method: "GET",
-      redirect: "follow",
-      signal: controller.signal,
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-      }
-    });
+    const timeout =
+      setTimeout(
+        () => controller.abort(),
+        10000
+      );
+
+    const response =
+      await fetch(
+        platformUrl,
+        {
+          method: "GET",
+          redirect: "follow",
+          signal:
+            controller.signal,
+
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+
+            "Accept":
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+          }
+        }
+      );
 
     clearTimeout(timeout);
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(
+        `HTTP ${response.status}`
+      );
     }
 
-    const contentType = response.headers.get("content-type") || "";
+    const contentType =
+      response.headers.get(
+        "content-type"
+      ) || "";
 
-    if (!contentType.includes("text/html")) {
+    if (
+      !contentType.includes(
+        "text/html"
+      )
+    ) {
       return "";
     }
 
-    const html = await response.text();
+    const html =
+      await response.text();
 
-    const image = extractMetaImage(
-      html,
-      response.url || platformUrl
-    );
+    const image =
+      extractMetaImage(
+        html,
+        response.url ||
+          platformUrl
+      );
 
     if (image) {
-      console.log("Imagem encontrada automaticamente:", image);
+
+      console.log(
+        "Imagem encontrada automaticamente:",
+        image
+      );
+
       return image;
+
     }
 
     try {
-      const domain = new URL(
-        response.url || platformUrl
-      ).hostname;
+
+      const domain =
+        new URL(
+          response.url ||
+            platformUrl
+        ).hostname;
 
       if (domain) {
-        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
-          domain
-        )}&sz=256`;
+
+        return (
+          "https://www.google.com/s2/favicons?domain=" +
+          encodeURIComponent(domain) +
+          "&sz=256"
+        );
+
       }
+
     } catch {}
 
     return "";
+
   } catch (error) {
+
     console.log(
-      "Não foi possível encontrar imagem automaticamente:",
+      "Imagem automática:",
       error.message
     );
 
     try {
-      const domain = new URL(platformUrl).hostname;
+
+      const domain =
+        new URL(
+          platformUrl
+        ).hostname;
 
       if (domain) {
-        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
-          domain
-        )}&sz=256`;
+
+        return (
+          "https://www.google.com/s2/favicons?domain=" +
+          encodeURIComponent(domain) +
+          "&sz=256"
+        );
+
       }
+
     } catch {}
 
     return "";
+
   }
+
 }
 
+/* =========================
+   BANCO DE DADOS
+========================= */
+
 async function initDatabase() {
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -291,660 +493,1183 @@ async function initDatabase() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
-    CREATE INDEX IF NOT EXISTS idx_platforms_created_at
+    CREATE INDEX IF NOT EXISTS
+    idx_platforms_created_at
     ON platforms(created_at DESC);
   `);
 
-  const adminPhone = normalizePhone(process.env.ADMIN_PHONE);
-  const adminPassword = String(process.env.ADMIN_PASSWORD);
 
-  const existing = await pool.query(
-    "SELECT id FROM users WHERE phone = $1 LIMIT 1",
-    [adminPhone]
-  );
+  const adminPhone =
+    normalizePhone(
+      process.env.ADMIN_PHONE
+    );
+
+  const adminPassword =
+    String(
+      process.env.ADMIN_PASSWORD
+    );
+
+
+  const existing =
+    await pool.query(
+      `SELECT id
+       FROM users
+       WHERE phone = $1
+       LIMIT 1`,
+      [adminPhone]
+    );
+
 
   if (!existing.rowCount) {
-    const passwordHash = await bcrypt.hash(adminPassword, 12);
+
+    const passwordHash =
+      await bcrypt.hash(
+        adminPassword,
+        12
+      );
+
 
     await pool.query(
       `INSERT INTO users
        (phone, password_hash, role)
        VALUES ($1, $2, 'admin')`,
-      [adminPhone, passwordHash]
+      [
+        adminPhone,
+        passwordHash
+      ]
     );
 
-    console.log("Administrador criado com sucesso.");
+
+    console.log(
+      "Administrador criado com sucesso."
+    );
+
   } else {
+
     await pool.query(
-      "UPDATE users SET role = 'admin' WHERE phone = $1",
+      `UPDATE users
+       SET role = 'admin'
+       WHERE phone = $1`,
       [adminPhone]
     );
+
   }
+
 }
+
 
 /* =========================
    TESTE DO SERVIDOR
 ========================= */
 
-app.get("/api/health", async (req, res) => {
-  try {
-    await pool.query("SELECT 1");
+app.get(
+  "/api/health",
+  async (req, res) => {
 
-    res.json({
-      ok: true,
-      database: true
-    });
-  } catch (error) {
-    console.error(error);
+    try {
 
-    res.status(500).json({
-      ok: false,
-      database: false
-    });
+      await pool.query(
+        "SELECT 1"
+      );
+
+
+      res.json({
+        ok: true,
+        database: true
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        ok: false,
+        database: false
+      });
+
+    }
+
   }
-});
+);
+
 
 /* =========================
    LOGIN
 ========================= */
 
-app.post("/api/auth/login", async (req, res) => {
-app.post("/api/auth/login", async (req, res) => {
-  try {
-    const phone = normalizePhone(req.body.phone);
-    const password = String(req.body.password || "");
+app.post(
+  "/api/auth/login",
+  async (req, res) => {
 
-    if (!phone || !password) {
-      return res.status(400).json({
-        error: "Informe telefone e senha."
-      });
-    }
+    try {
 
-    /*
-      ADMIN
-      O administrador continua usando
-      ADMIN_PHONE + ADMIN_PASSWORD.
-    */
-
-    const adminPhone =
-      normalizePhone(process.env.ADMIN_PHONE);
-
-    if (phone === adminPhone) {
-      const adminPassword =
-        String(process.env.ADMIN_PASSWORD);
-
-      if (password !== adminPassword) {
-        return res.status(401).json({
-          error: "Senha incorreta."
-        });
-      }
-
-      const adminResult = await pool.query(
-        `SELECT
-          id,
-          phone,
-          password_hash,
-          role
-         FROM users
-         WHERE phone = $1
-         LIMIT 1`,
-        [adminPhone]
-      );
-
-      if (!adminResult.rowCount) {
-        return res.status(500).json({
-          error: "Administrador não encontrado."
-        });
-      }
-
-      const admin = adminResult.rows[0];
-
-      const token = createToken({
-        id: admin.id,
-        phone: admin.phone,
-        role: "admin"
-      });
-
-      res.cookie("panel_token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      });
-
-      return res.json({
-        ok: true,
-        user: {
-          id: admin.id,
-          phone: admin.phone,
-          role: "admin"
-        }
-      });
-    }
-
-    /*
-      CLIENTE
-      Se o telefone já existir:
-      - senha correta = entra
-      - senha errada = senha incorreta
-
-      Se o telefone não existir:
-      - cria automaticamente
-      - entra imediatamente
-    */
-
-    const result = await pool.query(
-      `SELECT
-        id,
-        phone,
-        password_hash,
-        role
-       FROM users
-       WHERE phone = $1
-       LIMIT 1`,
-      [phone]
-    );
-
-    if (result.rowCount) {
-      const user = result.rows[0];
-
-      const validPassword =
-        await bcrypt.compare(
-          password,
-          user.password_hash
+      const phone =
+        normalizePhone(
+          req.body.phone
         );
 
-      if (!validPassword) {
-        return res.status(401).json({
-          error: "Senha incorreta."
+      const password =
+        String(
+          req.body.password || ""
+        );
+
+
+      if (!phone || !password) {
+
+        return res.status(400).json({
+          error:
+            "Informe telefone e senha."
         });
+
       }
 
-      const token = createToken(user);
 
-      res.cookie("panel_token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000
-      });
+      /*
+        ADMIN
+      */
 
-      return res.json({
+      const adminPhone =
+        normalizePhone(
+          process.env.ADMIN_PHONE
+        );
+
+
+      if (
+        phone === adminPhone
+      ) {
+
+        const adminPassword =
+          String(
+            process.env.ADMIN_PASSWORD
+          );
+
+
+        if (
+          password !==
+          adminPassword
+        ) {
+
+          return res.status(401).json({
+            error:
+              "Senha incorreta."
+          });
+
+        }
+
+
+        const adminResult =
+          await pool.query(
+            `SELECT
+              id,
+              phone,
+              role
+             FROM users
+             WHERE phone = $1
+             LIMIT 1`,
+            [adminPhone]
+          );
+
+
+        if (
+          !adminResult.rowCount
+        ) {
+
+          return res.status(500).json({
+            error:
+              "Administrador não encontrado."
+          });
+
+        }
+
+
+        const admin =
+          adminResult.rows[0];
+
+
+        const token =
+          createToken({
+            id: admin.id,
+            phone: admin.phone,
+            role: "admin"
+          });
+
+
+        res.cookie(
+          "panel_token",
+          token,
+          {
+            httpOnly: true,
+            sameSite: "lax",
+            secure:
+              process.env.NODE_ENV ===
+              "production",
+            maxAge:
+              7 * 24 * 60 * 60 * 1000
+          }
+        );
+
+
+        return res.json({
+          ok: true,
+          user: {
+            id: admin.id,
+            phone: admin.phone,
+            role: "admin"
+          }
+        });
+
+      }
+
+
+      /*
+        CLIENTE EXISTENTE
+      */
+
+      const result =
+        await pool.query(
+          `SELECT
+            id,
+            phone,
+            password_hash,
+            role
+           FROM users
+           WHERE phone = $1
+           LIMIT 1`,
+          [phone]
+        );
+
+
+      if (result.rowCount) {
+
+        const user =
+          result.rows[0];
+
+
+        const validPassword =
+          await bcrypt.compare(
+            password,
+            user.password_hash
+          );
+
+
+        if (!validPassword) {
+
+          return res.status(401).json({
+            error:
+              "Senha incorreta."
+          });
+
+        }
+
+
+        const token =
+          createToken(user);
+
+
+        res.cookie(
+          "panel_token",
+          token,
+          {
+            httpOnly: true,
+            sameSite: "lax",
+            secure:
+              process.env.NODE_ENV ===
+              "production",
+            maxAge:
+              7 * 24 * 60 * 60 * 1000
+          }
+        );
+
+
+        return res.json({
+          ok: true,
+          user: {
+            id: user.id,
+            phone: user.phone,
+            role: user.role
+          }
+        });
+
+      }
+
+
+      /*
+        CLIENTE NOVO
+        CRIA AUTOMATICAMENTE
+      */
+
+      const passwordHash =
+        await bcrypt.hash(
+          password,
+          12
+        );
+
+
+      const newUser =
+        await pool.query(
+          `INSERT INTO users
+           (phone, password_hash, role)
+           VALUES ($1, $2, 'client')
+           RETURNING
+           id,
+           phone,
+           role`,
+          [
+            phone,
+            passwordHash
+          ]
+        );
+
+
+      const user =
+        newUser.rows[0];
+
+
+      const token =
+        createToken(user);
+
+
+      res.cookie(
+        "panel_token",
+        token,
+        {
+          httpOnly: true,
+          sameSite: "lax",
+          secure:
+            process.env.NODE_ENV ===
+            "production",
+          maxAge:
+            7 * 24 * 60 * 60 * 1000
+        }
+      );
+
+
+      return res.status(201).json({
         ok: true,
+        created: true,
         user: {
           id: user.id,
           phone: user.phone,
           role: user.role
         }
       });
-    }
 
-    /*
-      TELEFONE NOVO:
-      cria automaticamente como cliente.
-    */
 
-    const passwordHash =
-      await bcrypt.hash(password, 12);
+    } catch (error) {
 
-    const newUser =
-      await pool.query(
-        `INSERT INTO users
-         (phone, password_hash, role)
-         VALUES ($1, $2, 'client')
-         RETURNING
-         id,
-         phone,
-         role`,
-        [
-          phone,
-          passwordHash
-        ]
+      console.error(
+        "Erro no login:",
+        error
       );
 
-    const user =
-      newUser.rows[0];
 
-    const token =
-      createToken(user);
+      res.status(500).json({
+        error:
+          "Erro interno no login."
+      });
 
-    res.cookie(
-      "panel_token",
-      token,
-      {
-        httpOnly: true,
-        sameSite: "lax",
-        secure:
-          process.env.NODE_ENV ===
-          "production",
-        maxAge:
-          7 * 24 * 60 * 60 * 1000
-      }
+    }
+
+  }
+);
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+app.post(
+  "/api/auth/logout",
+  (req, res) => {
+
+    res.clearCookie(
+      "panel_token"
     );
 
-    return res.status(201).json({
-      ok: true,
-      created: true,
-      user: {
-        id: user.id,
-        phone: user.phone,
-        role: user.role
-      }
-    });
 
-  } catch (error) {
-
-    console.error(
-      "Erro no login:",
-      error
-    );
-
-    res.status(500).json({
-      error: "Erro interno no login."
+    res.json({
+      ok: true
     });
 
   }
-});
+);
 
-app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie("panel_token");
 
-  res.json({
-    ok: true
-  });
-});
+app.get(
+  "/api/auth/me",
+  auth,
+  (req, res) => {
 
-app.get("/api/auth/me", auth, (req, res) => {
-  res.json({
-    user: req.user
-  });
-});
+    res.json({
+      user: req.user
+    });
+
+  }
+);
+
 
 /* =========================
    PLATAFORMAS
 ========================= */
 
-app.get("/api/platforms", auth, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        name,
-        url,
-        description,
-        image_url,
-        created_at
-      FROM platforms
-      ORDER BY created_at DESC
-    `);
+app.get(
+  "/api/platforms",
+  auth,
+  async (req, res) => {
 
-    res.json({
-      platforms: result.rows
-    });
-  } catch (error) {
-    console.error(error);
+    try {
 
-    res.status(500).json({
-      error: "Não foi possível carregar as plataformas."
-    });
+      const result =
+        await pool.query(`
+          SELECT
+            id,
+            name,
+            url,
+            description,
+            image_url,
+            created_at
+          FROM platforms
+          ORDER BY created_at DESC
+        `);
+
+
+      res.json({
+        platforms:
+          result.rows
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      res.status(500).json({
+        error:
+          "Não foi possível carregar as plataformas."
+      });
+
+    }
+
   }
-});
-
-app.post("/api/platforms", auth, adminOnly, async (req, res) => {
-  try {
-    const {
-      name,
-      url,
-      description = ""
-    } = req.body;
-
-    if (!name?.trim() || !url?.trim()) {
-      return res.status(400).json({
-        error: "Nome e URL são obrigatórios."
-      });
-    }
-
-    if (!isHttpUrl(url.trim())) {
-      return res.status(400).json({
-        error: "A URL precisa começar com http:// ou https://."
-      });
-    }
-
-    console.log(
-      `Procurando imagem automática para: ${url.trim()}`
-    );
-
-    const imageUrl = await findPlatformImage(url.trim());
-
-    const result = await pool.query(
-      `INSERT INTO platforms
-       (name, url, description, image_url)
-       VALUES ($1, $2, $3, $4)
-       RETURNING
-       id,
-       name,
-       url,
-       description,
-       image_url,
-       created_at`,
-      [
-        name.trim(),
-        url.trim(),
-        String(description).trim(),
-        imageUrl
-      ]
-    );
-
-    res.status(201).json({
-      platform: result.rows[0]
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao adicionar plataforma."
-    });
-  }
-});
-
-app.put("/api/platforms/:id", auth, adminOnly, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-
-    const {
-      name,
-      url,
-      description = ""
-    } = req.body;
-
-    if (
-      !Number.isInteger(id) ||
-      !name?.trim() ||
-      !url?.trim()
-    ) {
-      return res.status(400).json({
-        error: "Dados inválidos."
-      });
-    }
-
-    if (!isHttpUrl(url.trim())) {
-      return res.status(400).json({
-        error: "A URL precisa começar com http:// ou https://."
-      });
-    }
-
-    console.log(
-      `Atualizando imagem automática para: ${url.trim()}`
-    );
-
-    const imageUrl = await findPlatformImage(url.trim());
-
-    const result = await pool.query(
-      `UPDATE platforms
-       SET
-        name = $1,
-        url = $2,
-        description = $3,
-        image_url = $4
-       WHERE id = $5
-       RETURNING
-        id,
-        name,
-        url,
-        description,
-        image_url,
-        created_at`,
-      [
-        name.trim(),
-        url.trim(),
-        String(description).trim(),
-        imageUrl,
-        id
-      ]
-    );
-
-    if (!result.rowCount) {
-      return res.status(404).json({
-        error: "Plataforma não encontrada."
-      });
-    }
-
-    res.json({
-      platform: result.rows[0]
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao editar plataforma."
-    });
-  }
-});
-
-app.delete("/api/platforms/:id", auth, adminOnly, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-
-    const result = await pool.query(
-      `DELETE FROM platforms
-       WHERE id = $1
-       RETURNING id`,
-      [id]
-    );
-
-    if (!result.rowCount) {
-      return res.status(404).json({
-        error: "Plataforma não encontrada."
-      });
-    }
-
-    res.json({
-      ok: true
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao excluir plataforma."
-    });
-  }
-});
+);
 
 /* =========================
-   CLIENTES
+   ADICIONAR PLATAFORMA
 ========================= */
 
-app.get("/api/clients", auth, adminOnly, async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT
-        id,
-        phone,
-        created_at
-      FROM users
-      WHERE role = 'client'
-      ORDER BY created_at DESC
-    `);
+app.post(
+  "/api/platforms",
+  auth,
+  adminOnly,
+  async (req, res) => {
 
-    res.json({
-      clients: result.rows
-    });
-  } catch (error) {
-    console.error(error);
+    try {
 
-    res.status(500).json({
-      error: "Erro ao carregar clientes."
-    });
-  }
-});
+      const {
+        name,
+        url,
+        description = ""
+      } = req.body;
 
-app.post("/api/clients", auth, adminOnly, async (req, res) => {
-  try {
-    const phone = normalizePhone(req.body.phone);
-    const password = String(req.body.password || "");
 
-    if (!phone || password.length < 4) {
-      return res.status(400).json({
+      if (
+        !name?.trim() ||
+        !url?.trim()
+      ) {
+
+        return res.status(400).json({
+          error:
+            "Nome e URL são obrigatórios."
+        });
+
+      }
+
+
+      if (
+        !isHttpUrl(
+          url.trim()
+        )
+      ) {
+
+        return res.status(400).json({
+          error:
+            "A URL precisa começar com http:// ou https://."
+        });
+
+      }
+
+
+      console.log(
+        "Procurando imagem automática:",
+        url.trim()
+      );
+
+
+      const imageUrl =
+        await findPlatformImage(
+          url.trim()
+        );
+
+
+      const result =
+        await pool.query(
+          `INSERT INTO platforms
+           (
+             name,
+             url,
+             description,
+             image_url
+           )
+           VALUES ($1, $2, $3, $4)
+           RETURNING
+             id,
+             name,
+             url,
+             description,
+             image_url,
+             created_at`,
+          [
+            name.trim(),
+            url.trim(),
+            String(
+              description
+            ).trim(),
+            imageUrl
+          ]
+        );
+
+
+      res.status(201).json({
+        platform:
+          result.rows[0]
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao adicionar plataforma:",
+        error
+      );
+
+
+      res.status(500).json({
         error:
-          "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
+          "Erro ao adicionar plataforma."
       });
+
     }
 
-    const exists = await pool.query(
-      "SELECT id FROM users WHERE phone = $1",
-      [phone]
-    );
-
-    if (exists.rowCount) {
-      return res.status(409).json({
-        error: "Esse telefone já está cadastrado."
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 12);
-
-    const result = await pool.query(
-      `INSERT INTO users
-       (phone, password_hash, role)
-       VALUES ($1, $2, 'client')
-       RETURNING id, phone, created_at`,
-      [phone, passwordHash]
-    );
-
-    res.status(201).json({
-      client: result.rows[0]
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao criar cliente."
-    });
   }
-});
+);
 
-app.put("/api/clients/:id", auth, adminOnly, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
-    const phone = normalizePhone(req.body.phone);
-    const password = String(req.body.password || "");
 
-    if (!Number.isInteger(id) || !phone) {
-      return res.status(400).json({
-        error: "Dados inválidos."
-      });
-    }
+/* =========================
+   EDITAR PLATAFORMA
+========================= */
 
-    const duplicate = await pool.query(
-      `SELECT id
-       FROM users
-       WHERE phone = $1
-       AND id <> $2`,
-      [phone, id]
-    );
+app.put(
+  "/api/platforms/:id",
+  auth,
+  adminOnly,
+  async (req, res) => {
 
-    if (duplicate.rowCount) {
-      return res.status(409).json({
-        error: "Esse telefone já está em uso."
-      });
-    }
+    try {
 
-    let result;
+      const id =
+        Number(req.params.id);
 
-    if (password) {
-      const passwordHash = await bcrypt.hash(password, 12);
 
-      result = await pool.query(
-        `UPDATE users
-         SET
-          phone = $1,
-          password_hash = $2
-         WHERE id = $3
-         AND role = 'client'
-         RETURNING id, phone, created_at`,
-        [phone, passwordHash, id]
+      const {
+        name,
+        url,
+        description = ""
+      } = req.body;
+
+
+      if (
+        !Number.isInteger(id) ||
+        !name?.trim() ||
+        !url?.trim()
+      ) {
+
+        return res.status(400).json({
+          error:
+            "Dados inválidos."
+        });
+
+      }
+
+
+      if (
+        !isHttpUrl(
+          url.trim()
+        )
+      ) {
+
+        return res.status(400).json({
+          error:
+            "A URL precisa começar com http:// ou https://."
+        });
+
+      }
+
+
+      console.log(
+        "Atualizando imagem automática:",
+        url.trim()
       );
-    } else {
-      result = await pool.query(
-        `UPDATE users
-         SET phone = $1
-         WHERE id = $2
-         AND role = 'client'
-         RETURNING id, phone, created_at`,
-        [phone, id]
+
+
+      const imageUrl =
+        await findPlatformImage(
+          url.trim()
+        );
+
+
+      const result =
+        await pool.query(
+          `UPDATE platforms
+           SET
+             name = $1,
+             url = $2,
+             description = $3,
+             image_url = $4
+           WHERE id = $5
+           RETURNING
+             id,
+             name,
+             url,
+             description,
+             image_url,
+             created_at`,
+          [
+            name.trim(),
+            url.trim(),
+            String(
+              description
+            ).trim(),
+            imageUrl,
+            id
+          ]
+        );
+
+
+      if (
+        !result.rowCount
+      ) {
+
+        return res.status(404).json({
+          error:
+            "Plataforma não encontrada."
+        });
+
+      }
+
+
+      res.json({
+        platform:
+          result.rows[0]
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao editar plataforma:",
+        error
       );
-    }
 
-    if (!result.rowCount) {
-      return res.status(404).json({
-        error: "Cliente não encontrado."
+
+      res.status(500).json({
+        error:
+          "Erro ao editar plataforma."
       });
+
     }
 
-    res.json({
-      client: result.rows[0]
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao editar cliente."
-    });
   }
-});
+);
 
-app.delete("/api/clients/:id", auth, adminOnly, async (req, res) => {
-  try {
-    const id = Number(req.params.id);
 
-    const result = await pool.query(
-      `DELETE FROM users
-       WHERE id = $1
-       AND role = 'client'
-       RETURNING id`,
-      [id]
-    );
+/* =========================
+   EXCLUIR PLATAFORMA
+========================= */
 
-    if (!result.rowCount) {
-      return res.status(404).json({
-        error: "Cliente não encontrado."
+app.delete(
+  "/api/platforms/:id",
+  auth,
+  adminOnly,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        Number(req.params.id);
+
+
+      const result =
+        await pool.query(
+          `DELETE FROM platforms
+           WHERE id = $1
+           RETURNING id`,
+          [id]
+        );
+
+
+      if (
+        !result.rowCount
+      ) {
+
+        return res.status(404).json({
+          error:
+            "Plataforma não encontrada."
+        });
+
+      }
+
+
+      res.json({
+        ok: true
       });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao excluir plataforma:",
+        error
+      );
+
+
+      res.status(500).json({
+        error:
+          "Erro ao excluir plataforma."
+      });
+
     }
 
-    res.json({
-      ok: true
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      error: "Erro ao excluir cliente."
-    });
   }
-});
+);
+
+
+/* =========================
+   CLIENTES - LISTAR
+========================= */
+
+app.get(
+  "/api/clients",
+  auth,
+  adminOnly,
+  async (req, res) => {
+
+    try {
+
+      const result =
+        await pool.query(`
+          SELECT
+            id,
+            phone,
+            created_at
+          FROM users
+          WHERE role = 'client'
+          ORDER BY created_at DESC
+        `);
+
+
+      res.json({
+        clients:
+          result.rows
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao carregar clientes:",
+        error
+      );
+
+
+      res.status(500).json({
+        error:
+          "Erro ao carregar clientes."
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================
+   CLIENTES - CRIAR PELO ADM
+========================= */
+
+app.post(
+  "/api/clients",
+  auth,
+  adminOnly,
+  async (req, res) => {
+
+    try {
+
+      const phone =
+        normalizePhone(
+          req.body.phone
+        );
+
+      const password =
+        String(
+          req.body.password || ""
+        );
+
+
+      if (
+        !phone ||
+        password.length < 4
+      ) {
+
+        return res.status(400).json({
+          error:
+            "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
+        });
+
+      }
+
+
+      const exists =
+        await pool.query(
+          `SELECT id
+           FROM users
+           WHERE phone = $1`,
+          [phone]
+        );
+
+
+      if (
+        exists.rowCount
+      ) {
+
+        return res.status(409).json({
+          error:
+            "Esse telefone já está cadastrado."
+        });
+
+      }
+
+
+      const passwordHash =
+        await bcrypt.hash(
+          password,
+          12
+        );
+
+
+      const result =
+        await pool.query(
+          `INSERT INTO users
+           (
+             phone,
+             password_hash,
+             role
+           )
+           VALUES
+           (
+             $1,
+             $2,
+             'client'
+           )
+           RETURNING
+             id,
+             phone,
+             created_at`,
+          [
+            phone,
+            passwordHash
+          ]
+        );
+
+
+      res.status(201).json({
+        client:
+          result.rows[0]
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao criar cliente:",
+        error
+      );
+
+
+      res.status(500).json({
+        error:
+          "Erro ao criar cliente."
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================
+   CLIENTES - EDITAR
+========================= */
+
+app.put(
+  "/api/clients/:id",
+  auth,
+  adminOnly,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        Number(req.params.id);
+
+      const phone =
+        normalizePhone(
+          req.body.phone
+        );
+
+      const password =
+        String(
+          req.body.password || ""
+        );
+
+
+      if (
+        !Number.isInteger(id) ||
+        !phone
+      ) {
+
+        return res.status(400).json({
+          error:
+            "Dados inválidos."
+        });
+
+      }
+
+
+      const duplicate =
+        await pool.query(
+          `SELECT id
+           FROM users
+           WHERE phone = $1
+           AND id <> $2`,
+          [
+            phone,
+            id
+          ]
+        );
+
+
+      if (
+        duplicate.rowCount
+      ) {
+
+        return res.status(409).json({
+          error:
+            "Esse telefone já está em uso."
+        });
+
+      }
+
+
+      let result;
+
+
+      if (password) {
+
+        const passwordHash =
+          await bcrypt.hash(
+            password,
+            12
+          );
+
+
+        result =
+          await pool.query(
+            `UPDATE users
+             SET
+               phone = $1,
+               password_hash = $2
+             WHERE
+               id = $3
+               AND role = 'client'
+             RETURNING
+               id,
+               phone,
+               created_at`,
+            [
+              phone,
+              passwordHash,
+              id
+            ]
+          );
+
+      } else {
+
+        result =
+          await pool.query(
+            `UPDATE users
+             SET phone = $1
+             WHERE
+               id = $2
+               AND role = 'client'
+             RETURNING
+               id,
+               phone,
+               created_at`,
+            [
+              phone,
+              id
+            ]
+          );
+
+      }
+
+
+      if (
+        !result.rowCount
+      ) {
+
+        return res.status(404).json({
+          error:
+            "Cliente não encontrado."
+        });
+
+      }
+
+
+      res.json({
+        client:
+          result.rows[0]
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao editar cliente:",
+        error
+      );
+
+
+      res.status(500).json({
+        error:
+          "Erro ao editar cliente."
+      });
+
+    }
+
+  }
+);
+
+
+/* =========================
+   CLIENTES - EXCLUIR
+========================= */
+
+app.delete(
+  "/api/clients/:id",
+  auth,
+  adminOnly,
+  async (req, res) => {
+
+    try {
+
+      const id =
+        Number(req.params.id);
+
+
+      const result =
+        await pool.query(
+          `DELETE FROM users
+           WHERE
+             id = $1
+             AND role = 'client'
+           RETURNING id`,
+          [id]
+        );
+
+
+      if (
+        !result.rowCount
+      ) {
+
+        return res.status(404).json({
+          error:
+            "Cliente não encontrado."
+        });
+
+      }
+
+
+      res.json({
+        ok: true
+      });
+
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao excluir cliente:",
+        error
+      );
+
+
+      res.status(500).json({
+        error:
+          "Erro ao excluir cliente."
+      });
+
+    }
+
+  }
+);
 
 /* =========================
    ARQUIVOS DO PAINEL
 ========================= */
 
 app.use(
-  express.static(__dirname, {
-    index: "index.html"
-  })
+  express.static(
+    __dirname,
+    {
+      index: "index.html"
+    }
+  )
 );
 
-app.use((req, res, next) => {
-  if (
-    req.method === "GET" &&
-    !req.path.startsWith("/api/")
-  ) {
-    return res.sendFile(
-      path.join(__dirname, "index.html")
-    );
-  }
 
-  next();
-});
+app.use(
+  (req, res, next) => {
+
+    if (
+      req.method === "GET" &&
+      !req.path.startsWith(
+        "/api/"
+      )
+    ) {
+
+      return res.sendFile(
+        path.join(
+          __dirname,
+          "index.html"
+        )
+      );
+
+    }
+
+    next();
+
+  }
+);
+
 
 /* =========================
    INICIAR SERVIDOR
@@ -952,17 +1677,27 @@ app.use((req, res, next) => {
 
 initDatabase()
   .then(() => {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(
-        `Servidor rodando na porta ${PORT}`
-      );
-    });
+
+    app.listen(
+      PORT,
+      "0.0.0.0",
+      () => {
+
+        console.log(
+          `Servidor rodando na porta ${PORT}`
+        );
+
+      }
+    );
+
   })
   .catch(error => {
+
     console.error(
       "Erro ao iniciar banco:",
       error
     );
 
     process.exit(1);
+
   });
