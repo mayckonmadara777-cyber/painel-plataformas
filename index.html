@@ -1,72 +1,177 @@
 <!doctype html>
 <html lang="pt-BR">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
 <title>Painel do ADM Way</title>
 
 <style>
 
 :root{
+
   --bg:#07050b;
   --card:#110c18;
+  --card2:#170f20;
+
   --p:#9b4dff;
   --p2:#c66bff;
+
   --txt:#f7f2ff;
-  --muted:#a99bb8;
-  --line:#2b193d;
-  --danger:#ff5275;
+  --muted:#a99bb5;
+
+  --border:rgba(155,77,255,.25);
+
+  --danger:#ff416c;
+
+  --shadow:
+    0 0 25px
+    rgba(155,77,255,.12);
+
 }
 
 *{
   box-sizing:border-box;
 }
 
+html,
 body{
+
   margin:0;
-  min-height:100vh;
+  padding:0;
+
+  min-height:100%;
+
   background:
     radial-gradient(
       circle at top,
-      #1c0b2b,
-      #07050b 48%
+      #190b29 0,
+      var(--bg) 45%,
+      #030206 100%
     );
+
   color:var(--txt);
-  font-family:system-ui,Arial,sans-serif;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+}
+
+body{
+  min-height:100vh;
+}
+
+button,
+input,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
 }
 
 .hidden{
-  display:none!important;
+  display:none !important;
 }
 
-.wrap{
-  max-width:1100px;
-  margin:auto;
-  padding:16px;
-}
+
+/* =========================
+   LOGIN
+========================= */
 
 .login{
-  min-height:100vh;
-  display:grid;
-  place-items:center;
-  padding:18px;
+
+  position:fixed;
+
+  inset:0;
+
+  z-index:999;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:20px;
+
+  background:
+    rgba(3,2,6,.94);
+
+  backdrop-filter:
+    blur(10px);
+
 }
 
-.box{
-  width:min(430px,100%);
-  background:#110c18ef;
-  border:1px solid var(--line);
-  border-radius:24px;
+.login .box{
+
+  width:100%;
+  max-width:420px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(23,15,32,.98),
+      rgba(10,7,14,.98)
+    );
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:22px;
+
   padding:28px;
-  box-shadow:0 0 45px #9b4dff25;
+
+  box-shadow:
+    0 0 45px
+    rgba(155,77,255,.2);
+
+}
+
+
+/* =========================
+   GERAL
+========================= */
+
+.wrap{
+
+  width:100%;
+
+  max-width:1200px;
+
+  margin:auto;
+
+  padding:18px;
+
 }
 
 .logo{
-  font-size:26px;
+
+  font-size:24px;
+
   font-weight:900;
+
+  letter-spacing:.5px;
+
+  color:#fff;
+
+  text-shadow:
+    0 0 15px
+    rgba(198,107,255,.5);
+
 }
 
-.logo b{
+.logo span{
   color:var(--p2);
 }
 
@@ -75,266 +180,736 @@ body{
 }
 
 .field{
-  margin:12px 0;
+  margin-bottom:16px;
 }
 
 .field label{
+
   display:block;
-  font-size:13px;
-  margin-bottom:6px;
-  color:#d4c8dd;
+
+  margin-bottom:7px;
+
+  color:#ddd0e8;
+
+  font-size:14px;
+
+  font-weight:700;
+
 }
 
 input,
 textarea{
-  width:100%;
-  padding:13px;
-  border-radius:12px;
-  border:1px solid #382248;
-  background:#0a0710;
-  color:white;
-  outline:0;
-}
 
-textarea{
-  min-height:90px;
+  width:100%;
+
+  border:
+    1px solid
+    rgba(198,107,255,.2);
+
+  background:
+    rgba(0,0,0,.35);
+
+  color:#fff;
+
+  border-radius:12px;
+
+  padding:13px 14px;
+
+  outline:none;
+
 }
 
 input:focus,
 textarea:focus{
-  border-color:var(--p);
+
+  border-color:
+    var(--p);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(155,77,255,.1);
+
 }
 
-button,
-.btn{
+textarea{
+
+  min-height:110px;
+
+  resize:vertical;
+
+}
+
+
+/* =========================
+   BOTÕES
+========================= */
+
+button{
+
   border:0;
+
   border-radius:12px;
-  padding:11px 14px;
+
+  padding:12px 16px;
+
+  color:#fff;
+
   font-weight:800;
-  color:white;
+
   background:
     linear-gradient(
       135deg,
-      #7e31e8,
-      #b85cff
+      var(--p),
+      var(--p2)
     );
-  cursor:pointer;
-  text-decoration:none;
-  display:inline-block;
+
+  box-shadow:
+    0 0 18px
+    rgba(155,77,255,.18);
+
+}
+
+button:hover{
+  filter:brightness(1.08);
 }
 
 button:disabled{
+
   opacity:.6;
-  cursor:wait;
+
+  cursor:not-allowed;
+
 }
 
-.secondary{
-  background:#21152c;
+button.secondary{
+
+  background:
+    rgba(255,255,255,.06);
+
+  border:
+    1px solid
+    rgba(255,255,255,.1);
+
 }
 
-.danger{
-  background:#42101e;
-  color:#ff9aae;
+button.danger{
+
+  background:
+    linear-gradient(
+      135deg,
+      #d51f4f,
+      var(--danger)
+    );
+
 }
 
-.small{
+button.small{
+
+  padding:9px 12px;
+
   font-size:13px;
-  padding:9px 11px;
+
 }
 
-.top,
-.section-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
+
+/* =========================
+   TOPO
+========================= */
 
 .top{
-  padding:8px 0 20px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:12px;
+
+  flex-wrap:wrap;
+
+  padding:
+    10px 0 18px;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.06);
+
 }
 
+.top-left{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+}
+
+.top-right{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:flex-end;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+}
+
+.role{
+
+  color:var(--p2);
+
+  font-size:12px;
+
+  font-weight:900;
+
+  letter-spacing:.7px;
+
+}
+
+
+/* =========================
+   HERO
+========================= */
+
 .hero{
-  background:#9b4dff18;
-  border:1px solid var(--line);
+
+  margin:
+    25px 0 22px;
+
+  padding:24px;
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:20px;
-  padding:20px;
-  margin-bottom:18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(155,77,255,.1),
+      rgba(255,255,255,.02)
+    );
+
+  box-shadow:
+    var(--shadow);
+
 }
 
 .hero h1{
-  margin:0 0 5px;
+
+  margin:0 0 8px;
+
+  font-size:
+    clamp(25px,5vw,40px);
+
 }
+
+.hero p{
+
+  margin:0;
+
+  color:var(--muted);
+
+  line-height:1.5;
+
+}
+
+
+/* =========================
+   TABS
+========================= */
 
 .tabs{
+
   display:flex;
+
   gap:8px;
-  margin-bottom:18px;
+
+  flex-wrap:wrap;
+
+  margin-bottom:20px;
+
 }
 
-.tab{
-  background:#0e0913;
-  border:1px solid var(--line);
+.tabs button{
+
+  background:
+    rgba(255,255,255,.05);
+
+  border:
+    1px solid
+    rgba(255,255,255,.08);
+
 }
 
-.tab.active{
-  background:#2a173b;
-  border-color:#783db0;
+.tabs button.active{
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--p),
+      var(--p2)
+    );
+
 }
+
+
+/* =========================
+   TITULOS
+========================= */
+
+.section-title{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:12px;
+
+  margin:
+    28px 0 14px;
+
+  flex-wrap:wrap;
+
+}
+
+.section-title h2{
+
+  margin:0;
+
+  font-size:20px;
+
+}
+
+.section-title span{
+
+  color:var(--muted);
+
+  font-size:13px;
+
+}
+
+
+/* =========================
+   GRID
+========================= */
 
 .grid{
+
   display:grid;
+
   grid-template-columns:
     repeat(
       auto-fill,
-      minmax(220px,1fr)
+      minmax(250px,1fr)
     );
-  gap:14px;
+
+  gap:16px;
+
 }
 
+
+/* =========================
+   CARD
+========================= */
+
 .card{
-  background:#110c18;
-  border:1px solid var(--line);
-  border-radius:18px;
+
   overflow:hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--card2),
+      var(--card)
+    );
+
+  border:
+    1px solid
+    var(--border);
+
+  border-radius:18px;
+
+  box-shadow:
+    var(--shadow);
+
+  transition:
+    transform .2s,
+    border-color .2s;
+
+}
+
+.card:hover{
+
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(198,107,255,.5);
+
 }
 
 .thumb{
-  height:125px;
-  background:#0b0810;
-  display:grid;
-  place-items:center;
+
+  width:100%;
+
+  height:170px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(155,77,255,.12),
+      rgba(0,0,0,.3)
+    );
+
   overflow:hidden;
+
 }
 
 .thumb img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
 
-.ph{
-  font-size:36px;
-  color:var(--p2);
+  width:100%;
+
+  height:100%;
+
+  object-fit:contain;
+
+  padding:18px;
+
 }
 
 .body{
-  padding:14px;
+
+  padding:17px;
+
 }
 
 .body h3{
-  margin:0 0 6px;
+
+  margin:
+    0 0 8px;
+
+  font-size:18px;
+
 }
 
 .desc{
+
   color:var(--muted);
-  font-size:13px;
-  min-height:36px;
+
+  line-height:1.45;
+
+  min-height:42px;
+
+  font-size:14px;
+
 }
 
 .actions{
+
   display:flex;
-  gap:7px;
-  margin-top:12px;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+  margin-top:15px;
+
 }
 
-.actions>*{
+.actions button,
+.actions a{
+
   flex:1;
+
+  min-width:100px;
+
   text-align:center;
+
 }
+
+.actions a{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:12px 16px;
+
+  border-radius:12px;
+
+  text-decoration:none;
+
+  color:#fff;
+
+  font-weight:800;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--p),
+      var(--p2)
+    );
+
+}
+
+
+/* =========================
+   PAINEL
+========================= */
 
 .panel{
-  background:#110c18;
-  border:1px solid var(--line);
+
+  background:
+    rgba(17,12,24,.75);
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:18px;
-  padding:17px;
-  margin-bottom:18px;
+
+  padding:18px;
+
+  margin-bottom:20px;
+
 }
 
 .formgrid{
+
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
+
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+
+  gap:15px;
+
 }
 
 .full{
   grid-column:1/-1;
 }
 
+.auto-image-info{
+
+  padding:14px;
+
+  border-radius:12px;
+
+  background:
+    rgba(155,77,255,.08);
+
+  border:
+    1px solid
+    rgba(155,77,255,.18);
+
+  color:#d8c7e4;
+
+  font-size:13px;
+
+  line-height:1.5;
+
+}
+
+
+/* =========================
+   CLIENTES
+========================= */
+
 .list{
-  display:grid;
-  gap:9px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:10px;
+
 }
 
 .row{
+
   display:flex;
-  justify-content:space-between;
+
   align-items:center;
-  gap:10px;
-  padding:12px;
-  background:#0d0912;
-  border:1px solid #261635;
-  border-radius:13px;
+
+  justify-content:space-between;
+
+  gap:12px;
+
+  padding:15px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.07);
+
+  border-radius:14px;
+
+  background:
+    rgba(255,255,255,.025);
+
 }
 
 .ra{
+
   display:flex;
-  gap:7px;
+
+  gap:8px;
+
+  flex-wrap:wrap;
+
+  justify-content:flex-end;
+
 }
+
+
+/* =========================
+   VAZIO
+========================= */
 
 .empty{
-  border:1px dashed #39234a;
-  border-radius:16px;
-  padding:24px;
-  text-align:center;
-  color:var(--muted);
+
   grid-column:1/-1;
+
+  padding:35px 20px;
+
+  text-align:center;
+
+  color:var(--muted);
+
+  border:
+    1px dashed
+    rgba(198,107,255,.2);
+
+  border-radius:15px;
+
 }
 
+
+/* =========================
+   MODAL
+========================= */
+
 .modal{
+
   position:fixed;
+
   inset:0;
-  background:#000b;
-  display:grid;
-  place-items:center;
-  padding:16px;
-  z-index:5;
+
+  z-index:1000;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:18px;
+
+  background:
+    rgba(0,0,0,.78);
+
+  backdrop-filter:
+    blur(8px);
+
 }
 
 .modalbox{
-  width:min(560px,100%);
-  max-height:90vh;
+
+  width:100%;
+
+  max-width:560px;
+
+  max-height:
+    90vh;
+
   overflow:auto;
-  background:#100b16;
-  border:1px solid var(--line);
+
+  background:
+    linear-gradient(
+      145deg,
+      #170f20,
+      #0a070e
+    );
+
+  border:
+    1px solid
+    var(--border);
+
   border-radius:20px;
+
   padding:20px;
+
+  box-shadow:
+    0 0 45px
+    rgba(155,77,255,.2);
+
 }
 
 .modalhead{
+
   display:flex;
-  justify-content:space-between;
+
   align-items:center;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  margin-bottom:18px;
+
+}
+
+.modalhead h2{
+
+  margin:0;
+
+  font-size:20px;
+
 }
 
 .close{
-  background:none;
-  font-size:26px;
+
+  width:40px;
+
+  height:40px;
+
   padding:0;
+
+  border-radius:50%;
+
+  background:
+    rgba(255,255,255,.06);
+
 }
 
-.auto-image-info{
-  background:#160d20;
-  border:1px solid #39204e;
-  color:#cdb7df;
-  border-radius:12px;
-  padding:11px;
-  font-size:12px;
-  line-height:1.5;
-  margin-top:8px;
-}
 
-@media(max-width:650px){
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media(max-width:700px){
+
+  .wrap{
+    padding:12px;
+  }
 
   .formgrid{
     grid-template-columns:1fr;
@@ -344,46 +919,62 @@ button:disabled{
     grid-column:auto;
   }
 
+  .top{
+    align-items:flex-start;
+  }
+
+  .top-right{
+    width:100%;
+    justify-content:flex-start;
+  }
+
   .grid{
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:1fr;
+  }
+
+  .hero{
+    padding:20px;
   }
 
   .row{
-    flex-direction:column;
     align-items:flex-start;
+    flex-direction:column;
   }
 
   .ra{
     width:100%;
-  }
-
-  .ra>*{
-    flex:1;
-  }
-
-  .top{
-    align-items:flex-start;
+    justify-content:flex-start;
   }
 
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- LOGIN -->
 
-<div id="login" class="login">
+<!-- =========================
+     LOGIN ADM
+========================= -->
+
+<div
+  id="login"
+  class="login hidden"
+>
 
   <div class="box">
 
-    <div class="logo">
-      PAINEL <b>DO ADM WAY</b>
+    <div
+      class="logo"
+      style="margin-bottom:8px"
+    >
+      Painel do <span>ADM Way</span>
     </div>
 
     <p class="muted">
-      Entre para acessar o painel.
+      Área exclusiva do administrador.
     </p>
 
     <form id="loginForm">
@@ -391,13 +982,14 @@ button:disabled{
       <div class="field">
 
         <label>
-          Telefone
+          Número
         </label>
 
         <input
           id="phone"
-          inputmode="tel"
           required
+          autocomplete="username"
+          placeholder="Digite o número do ADM"
         >
 
       </div>
@@ -412,88 +1004,142 @@ button:disabled{
           id="pass"
           type="password"
           required
+          autocomplete="current-password"
+          placeholder="Digite a senha"
         >
 
       </div>
+
+      <div
+        id="err"
+        style="
+          color:#ff6b8a;
+          font-size:14px;
+          margin-bottom:14px;
+        "
+      ></div>
 
       <button
         type="submit"
         style="width:100%"
       >
-        ENTRAR
+        ENTRAR NA ÁREA ADM
       </button>
 
-      <p
-        id="err"
-        class="muted"
-      ></p>
-
     </form>
+
+    <button
+      type="button"
+      class="secondary"
+      onclick="closeAdminLogin()"
+      style="
+        width:100%;
+        margin-top:10px;
+      "
+    >
+      VOLTAR
+    </button>
 
   </div>
 
 </div>
 
-<!-- PAINEL -->
 
-<div id="app" class="hidden">
+<!-- =========================
+     APLICAÇÃO
+========================= -->
+
+<div
+  id="app"
+  class="hidden"
+>
 
   <div class="wrap">
 
-    <header class="top">
 
-      <div class="logo">
-        PAINEL <b>DO ADM WAY</b>
-      </div>
+    <!-- TOPO -->
 
-      <div>
+    <div class="top">
+
+      <div class="top-left">
+
+        <div class="logo">
+          Painel do <span>ADM Way</span>
+        </div>
 
         <span
           id="role"
-          class="muted"
+          class="role"
         ></span>
-
-        <button
-          class="secondary small"
-          onclick="logout()"
-        >
-          Sair
-        </button>
 
       </div>
 
-    </header>
 
+      <div class="top-right">
 
-    <div class="hero">
+        <button
+          id="adminAccess"
+          class="secondary"
+          onclick="openAdminLogin()"
+        >
+          ⚙️ ÁREA ADM
+        </button>
 
-      <h1 id="title">
-        Painel do ADM Way
-      </h1>
+        <button
+          id="logoutBtn"
+          class="secondary hidden"
+          onclick="logout()"
+        >
+          SAIR
+        </button>
 
-      <div class="muted">
-        Suas plataformas organizadas em um só lugar.
       </div>
 
     </div>
 
 
-    <!-- ADMIN -->
+    <!-- HERO -->
 
-    <div id="admin" class="hidden">
+    <div class="hero">
+
+      <h1>
+        Plataformas disponíveis
+      </h1>
+
+      <p>
+        Encontre rapidamente as plataformas
+        disponíveis e acesse diretamente.
+      </p>
+
+    </div>
+
+
+    <!-- =========================
+         ÁREA ADMIN
+    ========================= -->
+
+    <section
+      id="admin"
+      class="hidden"
+    >
 
       <div class="tabs">
 
         <button
-          class="tab active"
-          onclick="tab('plats',this)"
+          id="tabPlatforms"
+          class="active"
+          onclick="
+            tab('plats',this)
+          "
         >
           Plataformas
         </button>
 
         <button
-          class="tab"
-          onclick="tab('clients',this)"
+          id="tabClients"
+          onclick="
+            tab('clients',this)
+          "
         >
           Clientes
         </button>
@@ -501,70 +1147,105 @@ button:disabled{
       </div>
 
 
-      <section id="plats">
+      <!-- PLATAFORMAS ADMIN -->
+
+      <div id="plats">
 
         <div class="section-title">
 
-          <h2>
-            Plataformas
-          </h2>
+          <div>
+
+            <h2>
+              Gerenciar plataformas
+            </h2>
+
+            <span>
+              Adicione, edite ou exclua plataformas.
+            </span>
+
+          </div>
 
           <button
             onclick="platformModal()"
           >
-            + Adicionar
+            + ADICIONAR
           </button>
 
         </div>
+
 
         <div
           id="adminGrid"
           class="grid"
         ></div>
 
-      </section>
+      </div>
 
 
-      <section
+      <!-- CLIENTES ADMIN -->
+
+      <div
         id="clients"
         class="hidden"
       >
 
         <div class="section-title">
 
-          <h2>
-            Clientes
-          </h2>
+          <div>
+
+            <h2>
+              Gerenciar clientes
+            </h2>
+
+            <span>
+              Contas cadastradas no sistema.
+            </span>
+
+          </div>
 
           <button
             onclick="clientModal()"
           >
-            + Adicionar
+            + ADICIONAR
           </button>
 
         </div>
+
 
         <div
           id="clientList"
           class="list"
         ></div>
 
-      </section>
+      </div>
 
-    </div>
+    </section>
 
 
-    <!-- CLIENTE -->
+    <!-- =========================
+         ÁREA PÚBLICA
+    ========================= -->
 
-    <div id="client" class="hidden">
+    <section
+      id="client"
+    >
 
       <div class="section-title">
 
-        <h2>
-          Plataformas adicionadas recentemente
-        </h2>
+        <div>
+
+          <h2>
+            Plataformas adicionadas recentemente
+          </h2>
+
+          <span>
+            Somente plataformas dos últimos 7 dias.
+          </span>
+
+        </div>
 
       </div>
+
 
       <div
         id="recent"
@@ -574,25 +1255,37 @@ button:disabled{
 
       <div class="section-title">
 
-        <h2>
-          Todas as plataformas
-        </h2>
+        <div>
+
+          <h2>
+            Todas as plataformas
+          </h2>
+
+          <span>
+            Todas as plataformas disponíveis.
+          </span>
+
+        </div>
 
       </div>
+
 
       <div
         id="all"
         class="grid"
       ></div>
 
-    </div>
+    </section>
+
 
   </div>
 
 </div>
 
 
-<!-- MODAL -->
+<!-- =========================
+     MODAL
+========================= -->
 
 <div
   id="modal"
@@ -624,11 +1317,21 @@ button:disabled{
 <script>
 
 let me = null;
+
 let data = [];
 
-const $ = x =>
-  document.getElementById(x);
 
+/* =========================
+   ATALHOS
+========================= */
+
+const $ =
+  x => document.getElementById(x);
+
+
+/* =========================
+   ESCAPAR HTML
+========================= */
 
 const esc = s =>
   String(s ?? "").replace(
@@ -643,41 +1346,60 @@ const esc = s =>
   );
 
 
-async function api(url, options = {}) {
+/* =========================
+   API
+========================= */
 
-  const response = await fetch(
-    url,
-    {
-      credentials:"same-origin",
+async function api(
+  url,
+  options = {}
+){
 
-      headers:{
-        "Content-Type":"application/json"
-      },
+  const response =
+    await fetch(
+      url,
+      {
+        credentials:
+          "same-origin",
 
-      ...options
-    }
-  );
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        ...options
+      }
+    );
+
 
   let result = {};
 
-  try {
-    result = await response.json();
-  } catch {}
 
-  if (!response.ok) {
+  try{
+
+    result =
+      await response.json();
+
+  }catch{}
+
+
+  if(!response.ok){
 
     throw Error(
-      result.error || "Erro"
+      result.error ||
+      "Erro na solicitação."
     );
 
   }
 
+
   return result;
+
 }
 
 
 /* =========================
-   INICIALIZAÇÃO
+   INICIAR
 ========================= */
 
 async function boot(){
@@ -685,13 +1407,19 @@ async function boot(){
   try{
 
     me =
-      (await api(
-        "/api/auth/me"
-      )).user;
+      (
+        await api(
+          "/api/auth/me"
+        )
+      ).user;
 
     show();
 
   }catch{
+
+    me = null;
+
+    showPublic();
 
   }
 
@@ -699,7 +1427,52 @@ async function boot(){
 
 
 /* =========================
-   MOSTRAR PAINEL
+   MOSTRAR ÁREA PÚBLICA
+========================= */
+
+function showPublic(){
+
+  $("login")
+    .classList
+    .add("hidden");
+
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+
+  $("admin")
+    .classList
+    .add("hidden");
+
+
+  $("client")
+    .classList
+    .remove("hidden");
+
+
+  $("adminAccess")
+    .classList
+    .remove("hidden");
+
+
+  $("logoutBtn")
+    .classList
+    .add("hidden");
+
+
+  $("role").textContent =
+    "VISITANTE";
+
+
+  load();
+
+}
+
+
+/* =========================
+   MOSTRAR USUÁRIO LOGADO
 ========================= */
 
 function show(){
@@ -708,36 +1481,118 @@ function show(){
     .classList
     .add("hidden");
 
+
   $("app")
     .classList
     .remove("hidden");
 
 
+  $("adminAccess")
+    .classList
+    .add("hidden");
+
+
+  $("logoutBtn")
+    .classList
+    .remove("hidden");
+
+
   $("role").textContent =
-    me.role === "admin"
-      ? "ADMIN"
+    me?.role === "admin"
+      ? "ADMINISTRADOR"
       : "CLIENTE";
 
 
-  $("title").textContent =
-    "Painel do ADM Way";
-
-
-  if(me.role === "admin"){
+  if(
+    me &&
+    me.role === "admin"
+  ){
 
     $("admin")
       .classList
       .remove("hidden");
 
+
+    $("client")
+      .classList
+      .add("hidden");
+
+
     load();
 
   }else{
+
+    $("admin")
+      .classList
+      .add("hidden");
+
 
     $("client")
       .classList
       .remove("hidden");
 
+
     load();
+
+  }
+
+}
+
+
+/* =========================
+   ABRIR LOGIN ADM
+========================= */
+
+function openAdminLogin(){
+
+  $("login")
+    .classList
+    .remove("hidden");
+
+
+  $("app")
+    .classList
+    .add("hidden");
+
+
+  $("err").textContent =
+    "";
+
+
+  $("phone").value =
+    "";
+
+  $("pass").value =
+    "";
+
+
+  setTimeout(
+    () => $("phone").focus(),
+    50
+  );
+
+}
+
+
+/* =========================
+   FECHAR LOGIN ADM
+========================= */
+
+function closeAdminLogin(){
+
+  $("login")
+    .classList
+    .add("hidden");
+
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+
+  if(!me){
+
+    showPublic();
 
   }
 
@@ -753,36 +1608,76 @@ async e => {
 
   e.preventDefault();
 
-  $("err").textContent = "";
+
+  const button =
+    e.submitter;
+
+
+  if(button){
+    button.disabled =
+      true;
+  }
+
+
+  $("err").textContent =
+    "";
+
 
   try{
 
-    me =
-      (
-        await api(
-          "/api/auth/login",
-          {
-            method:"POST",
+    const result =
+      await api(
+        "/api/auth/login",
+        {
+          method:"POST",
 
-            body:JSON.stringify({
+          body:
+            JSON.stringify({
 
               phone:
-                $("phone").value,
+                $("phone").value
+                  .trim(),
 
               password:
                 $("pass").value
 
             })
-          }
-        )
-      ).user;
+
+        }
+      );
+
+
+    me =
+      result.user;
+
+
+    if(
+      !me ||
+      me.role !== "admin"
+    ){
+
+      throw Error(
+        "Acesso permitido somente ao administrador."
+      );
+
+    }
+
 
     show();
+
 
   }catch(error){
 
     $("err").textContent =
-      error.message;
+      error.message ||
+      "Senha incorreta.";
+
+  }finally{
+
+    if(button){
+      button.disabled =
+        false;
+    }
 
   }
 
@@ -790,17 +1685,24 @@ async e => {
 
 
 /* =========================
-   LOGOUT
+   SAIR
 ========================= */
 
 async function logout(){
 
-  await api(
-    "/api/auth/logout",
-    {
-      method:"POST"
-    }
-  );
+  try{
+
+    await api(
+      "/api/auth/logout",
+      {
+        method:"POST"
+      }
+    );
+
+  }catch{}
+
+
+  me = null;
 
   location.reload();
 
@@ -811,62 +1713,117 @@ async function logout(){
    ABAS ADMIN
 ========================= */
 
-function tab(id, button){
+function tab(
+  id,
+  button
+){
+
+  $("plats")
+    .classList
+    .add("hidden");
+
+  $("clients")
+    .classList
+    .add("hidden");
+
+
+  $("plats")
+    .classList
+    .toggle(
+      "hidden",
+      id !== "plats"
+    );
+
+  $("clients")
+    .classList
+    .toggle(
+      "hidden",
+      id !== "clients"
+    );
+
 
   document
     .querySelectorAll(
-      "#admin>section"
+      ".tabs button"
     )
-    .forEach(section =>
-      section.classList
-        .add("hidden")
+    .forEach(
+      item =>
+        item.classList
+          .remove("active")
     );
 
 
-  $(id)
-    .classList
-    .remove("hidden");
+  if(button){
+
+    button.classList
+      .add("active");
+
+  }
 
 
-  document
-    .querySelectorAll(".tab")
-    .forEach(tab =>
-      tab.classList
-        .remove("active")
-    );
+  if(id === "clients"){
 
-
-  button.classList
-    .add("active");
-
-}
-
-/* =========================
-   CARREGAR DADOS
-========================= */
-
-async function load(){
-
-  data =
-    (
-      await api(
-        "/api/platforms"
-      )
-    ).platforms;
-
-
-  render();
-
-
-  if(me.role === "admin"){
     clients();
+
   }
 
 }
 
 
 /* =========================
-   CARD PLATAFORMA
+   CARREGAR PLATAFORMAS
+========================= */
+
+async function load(){
+
+  try{
+
+    const result =
+      await api(
+        "/api/platforms"
+      );
+
+
+    data =
+      result.platforms ||
+      [];
+
+
+    render();
+
+  }catch(error){
+
+    data = [];
+
+
+    $("recent").innerHTML = `
+
+      <div class="empty">
+
+        Não foi possível carregar
+        as plataformas.
+
+        <br><br>
+
+        ${esc(
+          error.message
+        )}
+
+      </div>
+
+    `;
+
+
+    $("all").innerHTML =
+      "";
+
+  }
+
+}
+
+
+/* =========================
+   CARD DA PLATAFORMA
 ========================= */
 
 function card(
@@ -875,69 +1832,113 @@ function card(
 ){
 
   const image =
-    platform.image_url
+    platform.image_url ||
+    (
+      "https://www.google.com/s2/favicons" +
+      "?sz=256&domain_url=" +
+      encodeURIComponent(
+        platform.url
+      )
+    );
 
-      ? `
-        <img
-          src="${esc(
-            platform.image_url
-          )}"
-          alt="${esc(
-            platform.name
-          )}"
-          onerror="
-            this.style.display='none';
-            this.parentElement.innerHTML=
-            '<div class=&quot;ph&quot;>✦</div>'
-          "
-        >
-      `
 
-      : `
-        <div class="ph">
-          ✦
+  const description =
+    platform.description ||
+    "Acesse esta plataforma.";
+
+
+  const safeUrl =
+    esc(platform.url);
+
+
+  if(admin){
+
+    return `
+
+      <div class="card">
+
+        <div class="thumb">
+
+          <img
+            src="${esc(image)}"
+            alt="${esc(
+              platform.name
+            )}"
+            loading="lazy"
+            onerror="
+              this.style.display='none'
+            "
+          >
+
         </div>
-      `;
 
 
-  const actions = admin
+        <div class="body">
 
-    ? `
-      <button
-        onclick='platformModal(
-          ${JSON.stringify(platform)
-            .replace(/'/g,"&#39;")}
-        )'
-      >
-        Editar
-      </button>
+          <h3>
+            ${esc(platform.name)}
+          </h3>
 
-      <button
-        class="danger"
-        onclick="delP(${platform.id})"
-      >
-        Excluir
-      </button>
-    `
+          <div class="desc">
+            ${esc(description)}
+          </div>
 
-    : `
-      <a
-        class="btn"
-        href="${esc(platform.url)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        ACESSAR
-      </a>
+
+          <div class="actions">
+
+            <button
+              class="secondary"
+              onclick='platformModal(
+                ${JSON.stringify(platform)
+                  .replace(
+                    /'/g,
+                    "&#39;"
+                  )}
+              )'
+            >
+              EDITAR
+            </button>
+
+
+            <button
+              class="danger"
+              onclick="delP(
+                ${Number(platform.id)}
+              )"
+            >
+              EXCLUIR
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
     `;
+
+  }
 
 
   return `
+
     <div class="card">
 
       <div class="thumb">
-        ${image}
+
+        <img
+          src="${esc(image)}"
+          alt="${esc(
+            platform.name
+          )}"
+          loading="lazy"
+          onerror="
+            this.style.display='none'
+          "
+        >
+
       </div>
+
 
       <div class="body">
 
@@ -945,48 +1946,63 @@ function card(
           ${esc(platform.name)}
         </h3>
 
+
         <div class="desc">
-          ${esc(
-            platform.description ||
-            "Sem descrição"
-          )}
+
+          ${esc(description)}
+
         </div>
 
+
         <div class="actions">
-          ${actions}
+
+          <a
+            href="${safeUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ACESSAR
+          </a>
+
         </div>
 
       </div>
 
     </div>
+
   `;
 
 }
 
 
 /* =========================
-   RENDER
+   RENDERIZAR
 ========================= */
 
 function render(){
 
-  if(me.role === "admin"){
+  if(
+    me &&
+    me.role === "admin"
+  ){
 
     $("adminGrid").innerHTML =
       data.length
 
         ? data
-            .map(platform =>
-              card(
-                platform,
-                true
-              )
+            .map(
+              platform =>
+                card(
+                  platform,
+                  true
+                )
             )
             .join("")
 
         : `
           <div class="empty">
-            Nenhuma plataforma cadastrada.
+            Nenhuma plataforma
+            cadastrada.
           </div>
         `;
 
@@ -1005,27 +2021,31 @@ function render(){
 
 
   const recent =
-    data.filter(platform => {
+    data.filter(
+      platform => {
 
-      const created =
-        new Date(
-          platform.created_at
-        ).getTime();
+        const created =
+          new Date(
+            platform.created_at
+          ).getTime();
 
-      return (
-        Date.now() - created
-        < SEVEN_DAYS
-      );
 
-    });
+        return (
+          Date.now() - created
+          < SEVEN_DAYS
+        );
+
+      }
+    );
 
 
   $("recent").innerHTML =
     recent.length
 
       ? recent
-          .map(platform =>
-            card(platform)
+          .map(
+            platform =>
+              card(platform)
           )
           .join("")
 
@@ -1041,8 +2061,9 @@ function render(){
     data.length
 
       ? data
-          .map(platform =>
-            card(platform)
+          .map(
+            platform =>
+              card(platform)
           )
           .join("")
 
@@ -1052,8 +2073,7 @@ function render(){
         </div>
       `;
 
-}
-
+  }
 
 /* =========================
    MODAL
@@ -1067,8 +2087,10 @@ function openM(
   $("mt").textContent =
     title;
 
+
   $("mb").innerHTML =
     body;
+
 
   $("modal")
     .classList
@@ -1183,11 +2205,13 @@ function platformModal(
               type="submit"
               style="width:100%"
             >
+
               ${
                 platform
                   ? "SALVAR"
                   : "ADICIONAR PLATAFORMA"
               }
+
             </button>
 
           </div>
@@ -1236,17 +2260,20 @@ function platformModal(
               ? "PUT"
               : "POST",
 
+
           body:
             JSON.stringify({
 
               name:
-                $("pn").value,
+                $("pn").value.trim(),
+
 
               url:
-                $("pu").value,
+                $("pu").value.trim(),
+
 
               description:
-                $("pd").value
+                $("pd").value.trim()
 
             })
 
@@ -1256,6 +2283,7 @@ function platformModal(
 
 
       closeM();
+
 
       await load();
 
@@ -1294,7 +2322,9 @@ async function delP(id){
       "Excluir plataforma?"
     )
   ){
+
     return;
+
   }
 
 
@@ -1334,12 +2364,14 @@ async function clients(){
 
   try{
 
+    const result =
+      await api(
+        "/api/clients"
+      );
+
+
     const clients =
-      (
-        await api(
-          "/api/clients"
-        )
-      ).clients;
+      result.clients || [];
 
 
     $("clientList").innerHTML =
@@ -1347,63 +2379,67 @@ async function clients(){
       clients.length
 
         ? clients
-            .map(client => `
+            .map(
+              client => `
 
-              <div class="row">
+                <div class="row">
 
-                <div>
+                  <div>
 
-                  <b>
-                    ${esc(
-                      client.phone
-                    )}
-                  </b>
+                    <b>
+                      ${esc(
+                        client.phone
+                      )}
+                    </b>
 
-                  <br>
+                    <br>
 
-                  <small
-                    class="muted"
-                  >
-                    ${new Date(
-                      client.created_at
-                    ).toLocaleDateString(
-                      "pt-BR"
-                    )}
-                  </small>
+                    <small
+                      class="muted"
+                    >
+
+                      ${new Date(
+                        client.created_at
+                      ).toLocaleDateString(
+                        "pt-BR"
+                      )}
+
+                    </small>
+
+                  </div>
+
+
+                  <div class="ra">
+
+                    <button
+                      class="secondary"
+                      onclick='clientModal(
+                        ${JSON.stringify(client)
+                          .replace(
+                            /'/g,
+                            "&#39;"
+                          )}
+                      )'
+                    >
+                      EDITAR
+                    </button>
+
+
+                    <button
+                      class="danger"
+                      onclick="delC(
+                        ${Number(client.id)}
+                      )"
+                    >
+                      EXCLUIR
+                    </button>
+
+                  </div>
 
                 </div>
 
-
-                <div class="ra">
-
-                  <button
-                    class="secondary"
-                    onclick='clientModal(
-                      ${JSON.stringify(client)
-                        .replace(
-                          /'/g,
-                          "&#39;"
-                        )}
-                    )'
-                  >
-                    Editar
-                  </button>
-
-
-                  <button
-                    class="danger"
-                    onclick="delC(
-                      ${client.id}
-                    )"
-                  >
-                    Excluir
-                  </button>
-
-                </div>
-
-              </div>
-
-            `)
+              `
+            )
             .join("")
 
         : `
@@ -1429,9 +2465,10 @@ async function clients(){
 
   }
 
-                }
+}
 
-  /* =========================
+
+/* =========================
    MODAL CLIENTE
 ========================= */
 
@@ -1476,6 +2513,7 @@ function clientModal(
             }
 
           </label>
+
 
           <input
             id="cs"
@@ -1530,11 +2568,13 @@ function clientModal(
               ? "PUT"
               : "POST",
 
+
           body:
             JSON.stringify({
 
               phone:
-                $("cp").value,
+                $("cp").value.trim(),
+
 
               password:
                 $("cs").value
@@ -1548,7 +2588,8 @@ function clientModal(
 
       closeM();
 
-      clients();
+
+      await clients();
 
 
     }catch(error){
@@ -1575,7 +2616,9 @@ async function delC(id){
       "Excluir cliente?"
     )
   ){
+
     return;
+
   }
 
 
@@ -1593,7 +2636,7 @@ async function delC(id){
     );
 
 
-    clients();
+    await clients();
 
 
   }catch(error){
@@ -1604,16 +2647,26 @@ async function delC(id){
 
   }
 
-}
+      }
+
+ <!-- =========================
+     FINAL DO SISTEMA
+========================= -->
 
 
-/* =========================
-   INICIAR
-========================= */
+<script>
+
+/*
+  Fechamento do JavaScript.
+  O sistema inicia automaticamente
+  mostrando as plataformas públicas.
+*/
 
 boot();
 
 </script>
 
+
 </body>
-</html>
+
+</html> 
