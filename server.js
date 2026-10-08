@@ -78,6 +78,200 @@ function adminOnly(req, res, next) {
   next();
 }
 
+/* =========================
+   IMAGEM AUTOMÁTICA
+========================= */
+
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function resolveImageUrl(imageUrl, pageUrl) {
+  try {
+    return new URL(imageUrl, pageUrl).toString();
+  } catch {
+    return "";
+  }
+}
+
+function extractMetaImage(html, pageUrl) {
+  const candidates = [];
+
+  const metaRegex =
+    /<meta[^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]+content\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+  let match;
+
+  while ((match = metaRegex.exec(html)) !== null) {
+    const key = String(match[1]).toLowerCase().trim();
+    const value = String(match[2]).trim();
+
+    if (
+      [
+        "og:image",
+        "og:image:url",
+        "twitter:image",
+        "twitter:image:src"
+      ].includes(key) &&
+      value
+    ) {
+      candidates.push(value);
+    }
+  }
+
+  const metaRegexReverse =
+    /<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+  while ((match = metaRegexReverse.exec(html)) !== null) {
+    const value = String(match[1]).trim();
+    const key = String(match[2]).toLowerCase().trim();
+
+    if (
+      [
+        "og:image",
+        "og:image:url",
+        "twitter:image",
+        "twitter:image:src"
+      ].includes(key) &&
+      value
+    ) {
+      candidates.push(value);
+    }
+  }
+
+  const linkRegex =
+    /<link[^>]+(?:rel)\s*=\s*["']([^"']+)["'][^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+  while ((match = linkRegex.exec(html)) !== null) {
+    const rel = String(match[1]).toLowerCase();
+    const href = String(match[2]).trim();
+
+    if (
+      rel.includes("apple-touch-icon") ||
+      rel === "icon" ||
+      rel.includes("shortcut icon")
+    ) {
+      if (href) {
+        candidates.push(href);
+      }
+    }
+  }
+
+  const linkRegexReverse =
+    /<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+(?:rel)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+  while ((match = linkRegexReverse.exec(html)) !== null) {
+    const href = String(match[1]).trim();
+    const rel = String(match[2]).toLowerCase();
+
+    if (
+      rel.includes("apple-touch-icon") ||
+      rel === "icon" ||
+      rel.includes("shortcut icon")
+    ) {
+      if (href) {
+        candidates.push(href);
+      }
+    }
+  }
+
+  for (const candidate of candidates) {
+    const resolved = resolveImageUrl(candidate, pageUrl);
+
+    if (resolved && isHttpUrl(resolved)) {
+      return resolved;
+    }
+  }
+
+  return "";
+}
+
+async function findPlatformImage(platformUrl) {
+  if (!isHttpUrl(platformUrl)) {
+    return "";
+  }
+
+  try {
+    const controller = new AbortController();
+
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, 10000);
+
+    const response = await fetch(platformUrl, {
+      method: "GET",
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+      }
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+
+    if (!contentType.includes("text/html")) {
+      return "";
+    }
+
+    const html = await response.text();
+
+    const image = extractMetaImage(
+      html,
+      response.url || platformUrl
+    );
+
+    if (image) {
+      console.log("Imagem encontrada automaticamente:", image);
+      return image;
+    }
+
+    try {
+      const domain = new URL(
+        response.url || platformUrl
+      ).hostname;
+
+      if (domain) {
+        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
+          domain
+        )}&sz=256`;
+      }
+    } catch {}
+
+    return "";
+  } catch (error) {
+    console.log(
+      "Não foi possível encontrar imagem automaticamente:",
+      error.message
+    );
+
+    try {
+      const domain = new URL(platformUrl).hostname;
+
+      if (domain) {
+        return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
+          domain
+        )}&sz=256`;
+      }
+    } catch {}
+
+    return "";
+  }
+}
+
 async function initDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -271,8 +465,7 @@ app.post("/api/platforms", auth, adminOnly, async (req, res) => {
     const {
       name,
       url,
-      description = "",
-      image_url = ""
+      description = ""
     } = req.body;
 
     if (!name?.trim() || !url?.trim()) {
@@ -280,6 +473,18 @@ app.post("/api/platforms", auth, adminOnly, async (req, res) => {
         error: "Nome e URL são obrigatórios."
       });
     }
+
+    if (!isHttpUrl(url.trim())) {
+      return res.status(400).json({
+        error: "A URL precisa começar com http:// ou https://."
+      });
+    }
+
+    console.log(
+      `Procurando imagem automática para: ${url.trim()}`
+    );
+
+    const imageUrl = await findPlatformImage(url.trim());
 
     const result = await pool.query(
       `INSERT INTO platforms
@@ -296,7 +501,7 @@ app.post("/api/platforms", auth, adminOnly, async (req, res) => {
         name.trim(),
         url.trim(),
         String(description).trim(),
-        String(image_url).trim()
+        imageUrl
       ]
     );
 
@@ -319,15 +524,30 @@ app.put("/api/platforms/:id", auth, adminOnly, async (req, res) => {
     const {
       name,
       url,
-      description = "",
-      image_url = ""
+      description = ""
     } = req.body;
 
-    if (!Number.isInteger(id) || !name?.trim() || !url?.trim()) {
+    if (
+      !Number.isInteger(id) ||
+      !name?.trim() ||
+      !url?.trim()
+    ) {
       return res.status(400).json({
         error: "Dados inválidos."
       });
     }
+
+    if (!isHttpUrl(url.trim())) {
+      return res.status(400).json({
+        error: "A URL precisa começar com http:// ou https://."
+      });
+    }
+
+    console.log(
+      `Atualizando imagem automática para: ${url.trim()}`
+    );
+
+    const imageUrl = await findPlatformImage(url.trim());
 
     const result = await pool.query(
       `UPDATE platforms
@@ -348,7 +568,7 @@ app.put("/api/platforms/:id", auth, adminOnly, async (req, res) => {
         name.trim(),
         url.trim(),
         String(description).trim(),
-        String(image_url).trim(),
+        imageUrl,
         id
       ]
     );
@@ -435,7 +655,8 @@ app.post("/api/clients", auth, adminOnly, async (req, res) => {
 
     if (!phone || password.length < 4) {
       return res.status(400).json({
-        error: "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
+        error:
+          "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
       });
     }
 
@@ -582,12 +803,6 @@ app.use(
   })
 );
 
-/*
-  IMPORTANTE:
-  Express 5 não deve usar app.get("*").
-  Este fallback evita o erro:
-  PathError: Missing parameter name
-*/
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
@@ -608,10 +823,16 @@ app.use((req, res, next) => {
 initDatabase()
   .then(() => {
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
+      console.log(
+        `Servidor rodando na porta ${PORT}`
+      );
     });
   })
   .catch(error => {
-    console.error("Erro ao iniciar banco:", error);
+    console.error(
+      "Erro ao iniciar banco:",
+      error
+    );
+
     process.exit(1);
   });
