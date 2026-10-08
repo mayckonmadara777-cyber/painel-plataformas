@@ -1835,34 +1835,27 @@ app.use(
    ROTA PRINCIPAL
 ========================= */
 
-app.get(
-  "*",
-  (req, res) => {
+app.use(
+  (req, res, next) => {
 
     if (
-      req.path.startsWith(
-        "/api/"
-      )
+      req.method === "GET" &&
+      !req.path.startsWith("/api/")
     ) {
 
-      return res.status(404).json({
-        error:
-          "Rota não encontrada."
-      });
+      return res.sendFile(
+        path.join(
+          __dirname,
+          "index.html"
+        )
+      );
 
     }
 
-
-    res.sendFile(
-      path.join(
-        __dirname,
-        "index.html"
-      )
-    );
+    next();
 
   }
 );
-
 
 /* =========================
    INICIAR BANCO E SERVIDOR
