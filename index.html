@@ -15,25 +15,16 @@
 <style>
 
 :root{
-
   --bg:#07050b;
   --card:#110c18;
   --card2:#170f20;
-
   --p:#9b4dff;
   --p2:#c66bff;
-
   --txt:#f7f2ff;
   --muted:#a99bb5;
-
   --border:rgba(155,77,255,.25);
-
   --danger:#ff416c;
-
-  --shadow:
-    0 0 25px
-    rgba(155,77,255,.12);
-
+  --shadow:0 0 30px rgba(155,77,255,.12);
 }
 
 *{
@@ -42,31 +33,21 @@
 
 html,
 body{
-
   margin:0;
   padding:0;
-
   min-height:100%;
-
-  background:
-    radial-gradient(
-      circle at top,
-      #190b29 0,
-      var(--bg) 45%,
-      #030206 100%
-    );
-
-  color:var(--txt);
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
 }
 
 body{
-  min-height:100vh;
+  background:
+    radial-gradient(
+      circle at top,
+      #1b0d2b 0,
+      #07050b 42%,
+      #050409 100%
+    );
+  color:var(--txt);
+  font-family:Arial,Helvetica,sans-serif;
 }
 
 button,
@@ -80,870 +61,489 @@ button{
 }
 
 .hidden{
-  display:none !important;
+  display:none!important;
 }
 
 
-/* =========================
-   LOGIN
-========================= */
+/* LOGIN */
 
-.login{
-
-  position:fixed;
-
-  inset:0;
-
-  z-index:999;
-
+#login{
+  min-height:100vh;
   display:flex;
-
   align-items:center;
-
   justify-content:center;
-
   padding:20px;
-
-  background:
-    rgba(3,2,6,.94);
-
-  backdrop-filter:
-    blur(10px);
-
 }
 
-.login .box{
-
+.loginBox{
   width:100%;
   max-width:420px;
+  background:rgba(17,12,24,.96);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:28px;
+  box-shadow:var(--shadow);
+}
 
+.logoLogin{
+  text-align:center;
+  font-size:26px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.logoLogin span{
+  color:var(--p2);
+}
+
+.loginSub{
+  text-align:center;
+  color:var(--muted);
+  margin-bottom:25px;
+}
+
+.field{
+  margin-bottom:15px;
+}
+
+.field label{
+  display:block;
+  margin-bottom:7px;
+  color:#ddd1e8;
+  font-size:14px;
+}
+
+.field input,
+.field textarea{
+  width:100%;
+  background:#0b0810;
+  color:var(--txt);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:13px;
+  outline:none;
+}
+
+.field textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.field input:focus,
+.field textarea:focus{
+  border-color:var(--p);
+  box-shadow:0 0 0 3px rgba(155,77,255,.08);
+}
+
+.primary{
+  width:100%;
+  border:0;
+  border-radius:12px;
+  padding:14px;
+  background:linear-gradient(
+    135deg,
+    var(--p),
+    var(--p2)
+  );
+  color:white;
+  font-weight:900;
+}
+
+.secondary{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 14px;
+  background:#120d19;
+  color:var(--txt);
+}
+
+.error{
+  color:#ff718e;
+  margin-top:12px;
+  text-align:center;
+  font-size:14px;
+}
+
+
+/* APP */
+
+#app{
+  min-height:100vh;
+}
+
+.top{
+  position:sticky;
+  top:0;
+  z-index:20;
+  backdrop-filter:blur(15px);
+  background:rgba(7,5,11,.86);
+  border-bottom:1px solid rgba(155,77,255,.14);
+}
+
+.topIn{
+  width:100%;
+  max-width:1200px;
+  margin:auto;
+  padding:15px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.brand{
+  font-size:21px;
+  font-weight:900;
+  flex:1;
+}
+
+.brand span{
+  color:var(--p2);
+}
+
+.role{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:bold;
+}
+
+.topBtn{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 12px;
+  background:#120d19;
+  color:var(--txt);
+  font-weight:bold;
+}
+
+.container{
+  width:100%;
+  max-width:1200px;
+  margin:auto;
+  padding:25px 18px 50px;
+}
+
+.hero{
+  padding:20px 0 25px;
+}
+
+.hero h1{
+  margin:0 0 8px;
+  font-size:30px;
+}
+
+.hero p{
+  margin:0;
+  color:var(--muted);
+}
+
+.sectionTitle{
+  margin:30px 0 15px;
+  font-size:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:
+    repeat(auto-fill,minmax(250px,1fr));
+  gap:16px;
+}
+
+
+/* CARDS */
+
+.card{
   background:
     linear-gradient(
       145deg,
       rgba(23,15,32,.98),
-      rgba(10,7,14,.98)
+      rgba(13,9,18,.98)
     );
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:22px;
-
-  padding:28px;
-
-  box-shadow:
-    0 0 45px
-    rgba(155,77,255,.2);
-
-}
-
-
-/* =========================
-   GERAL
-========================= */
-
-.wrap{
-
-  width:100%;
-
-  max-width:1200px;
-
-  margin:auto;
-
-  padding:18px;
-
-}
-
-.logo{
-
-  font-size:24px;
-
-  font-weight:900;
-
-  letter-spacing:.5px;
-
-  color:#fff;
-
-  text-shadow:
-    0 0 15px
-    rgba(198,107,255,.5);
-
-}
-
-.logo span{
-  color:var(--p2);
-}
-
-.muted{
-  color:var(--muted);
-}
-
-.field{
-  margin-bottom:16px;
-}
-
-.field label{
-
-  display:block;
-
-  margin-bottom:7px;
-
-  color:#ddd0e8;
-
-  font-size:14px;
-
-  font-weight:700;
-
-}
-
-input,
-textarea{
-
-  width:100%;
-
-  border:
-    1px solid
-    rgba(198,107,255,.2);
-
-  background:
-    rgba(0,0,0,.35);
-
-  color:#fff;
-
-  border-radius:12px;
-
-  padding:13px 14px;
-
-  outline:none;
-
-}
-
-input:focus,
-textarea:focus{
-
-  border-color:
-    var(--p);
-
-  box-shadow:
-    0 0 0 3px
-    rgba(155,77,255,.1);
-
-}
-
-textarea{
-
-  min-height:110px;
-
-  resize:vertical;
-
-}
-
-
-/* =========================
-   BOTÕES
-========================= */
-
-button{
-
-  border:0;
-
-  border-radius:12px;
-
-  padding:12px 16px;
-
-  color:#fff;
-
-  font-weight:800;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--p),
-      var(--p2)
-    );
-
-  box-shadow:
-    0 0 18px
-    rgba(155,77,255,.18);
-
-}
-
-button:hover{
-  filter:brightness(1.08);
-}
-
-button:disabled{
-
-  opacity:.6;
-
-  cursor:not-allowed;
-
-}
-
-button.secondary{
-
-  background:
-    rgba(255,255,255,.06);
-
-  border:
-    1px solid
-    rgba(255,255,255,.1);
-
-}
-
-button.danger{
-
-  background:
-    linear-gradient(
-      135deg,
-      #d51f4f,
-      var(--danger)
-    );
-
-}
-
-button.small{
-
-  padding:9px 12px;
-
-  font-size:13px;
-
-}
-
-
-/* =========================
-   TOPO
-========================= */
-
-.top{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  gap:12px;
-
-  flex-wrap:wrap;
-
-  padding:
-    10px 0 18px;
-
-  border-bottom:
-    1px solid
-    rgba(255,255,255,.06);
-
-}
-
-.top-left{
-
-  display:flex;
-
-  align-items:center;
-
-  gap:12px;
-
-}
-
-.top-right{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:flex-end;
-
-  gap:8px;
-
-  flex-wrap:wrap;
-
-}
-
-.role{
-
-  color:var(--p2);
-
-  font-size:12px;
-
-  font-weight:900;
-
-  letter-spacing:.7px;
-
-}
-
-
-/* =========================
-   HERO
-========================= */
-
-.hero{
-
-  margin:
-    25px 0 22px;
-
-  padding:24px;
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:20px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(155,77,255,.1),
-      rgba(255,255,255,.02)
-    );
-
-  box-shadow:
-    var(--shadow);
-
-}
-
-.hero h1{
-
-  margin:0 0 8px;
-
-  font-size:
-    clamp(25px,5vw,40px);
-
-}
-
-.hero p{
-
-  margin:0;
-
-  color:var(--muted);
-
-  line-height:1.5;
-
-}
-
-
-/* =========================
-   TABS
-========================= */
-
-.tabs{
-
-  display:flex;
-
-  gap:8px;
-
-  flex-wrap:wrap;
-
-  margin-bottom:20px;
-
-}
-
-.tabs button{
-
-  background:
-    rgba(255,255,255,.05);
-
-  border:
-    1px solid
-    rgba(255,255,255,.08);
-
-}
-
-.tabs button.active{
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--p),
-      var(--p2)
-    );
-
-}
-
-
-/* =========================
-   TITULOS
-========================= */
-
-.section-title{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  gap:12px;
-
-  margin:
-    28px 0 14px;
-
-  flex-wrap:wrap;
-
-}
-
-.section-title h2{
-
-  margin:0;
-
-  font-size:20px;
-
-}
-
-.section-title span{
-
-  color:var(--muted);
-
-  font-size:13px;
-
-}
-
-
-/* =========================
-   GRID
-========================= */
-
-.grid{
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fill,
-      minmax(250px,1fr)
-    );
-
-  gap:16px;
-
-}
-
-
-/* =========================
-   CARD
-========================= */
-
-.card{
-
-  overflow:hidden;
-
-  background:
-    linear-gradient(
-      145deg,
-      var(--card2),
-      var(--card)
-    );
-
-  border:
-    1px solid
-    var(--border);
-
+  border:1px solid var(--border);
   border-radius:18px;
-
-  box-shadow:
-    var(--shadow);
-
-  transition:
-    transform .2s,
-    border-color .2s;
-
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:.2s;
 }
 
 .card:hover{
-
-  transform:
-    translateY(-3px);
-
-  border-color:
-    rgba(198,107,255,.5);
-
+  transform:translateY(-2px);
+  border-color:rgba(198,107,255,.5);
 }
 
 .thumb{
-
-  width:100%;
-
-  height:170px;
-
+  height:165px;
+  background:#0b0810;
   display:flex;
-
   align-items:center;
-
   justify-content:center;
-
-  background:
-    radial-gradient(
-      circle,
-      rgba(155,77,255,.12),
-      rgba(0,0,0,.3)
-    );
-
   overflow:hidden;
-
 }
 
 .thumb img{
-
   width:100%;
-
   height:100%;
+  object-fit:cover;
+}
 
-  object-fit:contain;
-
-  padding:18px;
-
+.thumbFallback{
+  font-size:55px;
+  opacity:.55;
 }
 
 .body{
-
   padding:17px;
-
 }
 
 .body h3{
-
-  margin:
-    0 0 8px;
-
-  font-size:18px;
-
+  margin:0 0 10px;
+  font-size:19px;
 }
 
 .desc{
-
   color:var(--muted);
-
-  line-height:1.45;
-
-  min-height:42px;
-
   font-size:14px;
-
+  line-height:1.5;
+  min-height:42px;
+  white-space:pre-wrap;
 }
 
 .actions{
-
   display:flex;
-
   gap:8px;
-
-  flex-wrap:wrap;
-
   margin-top:15px;
-
 }
 
-.actions button,
-.actions a{
-
+.actions a,
+.actions button{
   flex:1;
-
-  min-width:100px;
-
   text-align:center;
-
+  text-decoration:none;
+  border:0;
+  border-radius:10px;
+  padding:11px;
+  font-weight:900;
 }
 
 .actions a{
-
-  display:inline-flex;
-
-  align-items:center;
-
-  justify-content:center;
-
-  padding:12px 16px;
-
-  border-radius:12px;
-
-  text-decoration:none;
-
-  color:#fff;
-
-  font-weight:800;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--p),
-      var(--p2)
-    );
-
+  background:linear-gradient(
+    135deg,
+    var(--p),
+    var(--p2)
+  );
+  color:white;
 }
 
-
-/* =========================
-   PAINEL
-========================= */
-
-.panel{
-
-  background:
-    rgba(17,12,24,.75);
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:18px;
-
-  padding:18px;
-
-  margin-bottom:20px;
-
+.actions button{
+  background:#24132e;
+  color:white;
 }
-
-.formgrid{
-
-  display:grid;
-
-  grid-template-columns:
-    repeat(2,minmax(0,1fr));
-
-  gap:15px;
-
-}
-
-.full{
-  grid-column:1/-1;
-}
-
-.auto-image-info{
-
-  padding:14px;
-
-  border-radius:12px;
-
-  background:
-    rgba(155,77,255,.08);
-
-  border:
-    1px solid
-    rgba(155,77,255,.18);
-
-  color:#d8c7e4;
-
-  font-size:13px;
-
-  line-height:1.5;
-
-}
-
-
-/* =========================
-   CLIENTES
-========================= */
-
-.list{
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:10px;
-
-}
-
-.row{
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:space-between;
-
-  gap:12px;
-
-  padding:15px;
-
-  border:
-    1px solid
-    rgba(255,255,255,.07);
-
-  border-radius:14px;
-
-  background:
-    rgba(255,255,255,.025);
-
-}
-
-.ra{
-
-  display:flex;
-
-  gap:8px;
-
-  flex-wrap:wrap;
-
-  justify-content:flex-end;
-
-}
-
-
-/* =========================
-   VAZIO
-========================= */
 
 .empty{
-
   grid-column:1/-1;
-
-  padding:35px 20px;
-
   text-align:center;
-
   color:var(--muted);
-
-  border:
-    1px dashed
-    rgba(198,107,255,.2);
-
-  border-radius:15px;
-
+  padding:35px 15px;
+  border:1px dashed var(--border);
+  border-radius:16px;
 }
 
 
-/* =========================
-   MODAL
-========================= */
+/* ADMIN */
 
-.modal{
-
-  position:fixed;
-
-  inset:0;
-
-  z-index:1000;
-
-  display:flex;
-
-  align-items:center;
-
-  justify-content:center;
-
+.adminBox{
+  margin-top:20px;
+  background:rgba(17,12,24,.72);
+  border:1px solid var(--border);
+  border-radius:18px;
   padding:18px;
-
-  background:
-    rgba(0,0,0,.78);
-
-  backdrop-filter:
-    blur(8px);
-
 }
 
-.modalbox{
-
-  width:100%;
-
-  max-width:560px;
-
-  max-height:
-    90vh;
-
-  overflow:auto;
-
-  background:
-    linear-gradient(
-      145deg,
-      #170f20,
-      #0a070e
-    );
-
-  border:
-    1px solid
-    var(--border);
-
-  border-radius:20px;
-
-  padding:20px;
-
-  box-shadow:
-    0 0 45px
-    rgba(155,77,255,.2);
-
-}
-
-.modalhead{
-
+.tabs{
   display:flex;
+  gap:8px;
+  margin-bottom:20px;
+}
 
-  align-items:center;
+.tabBtn{
+  border:1px solid var(--border);
+  background:#100b16;
+  color:var(--muted);
+  padding:11px 15px;
+  border-radius:10px;
+  font-weight:bold;
+}
 
+.tabBtn.active{
+  background:linear-gradient(
+    135deg,
+    var(--p),
+    var(--p2)
+  );
+  color:white;
+}
+
+.adminHead{
+  display:flex;
   justify-content:space-between;
-
+  align-items:center;
   gap:10px;
-
-  margin-bottom:18px;
-
+  margin-bottom:15px;
 }
 
-.modalhead h2{
-
+.adminHead h2{
   margin:0;
+  font-size:19px;
+}
 
+.addBtn{
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  background:linear-gradient(
+    135deg,
+    var(--p),
+    var(--p2)
+  );
+  color:white;
+  font-weight:900;
+}
+
+.clientList{
+  display:grid;
+  gap:10px;
+}
+
+.clientItem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:#0d0912;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px;
+}
+
+.clientInfo strong{
+  display:block;
+}
+
+.clientInfo small{
+  color:var(--muted);
+}
+
+.clientActions{
+  display:flex;
+  gap:7px;
+}
+
+.smallBtn{
+  border:1px solid var(--border);
+  background:#17101f;
+  color:white;
+  border-radius:8px;
+  padding:8px 10px;
+}
+
+.smallBtn.red{
+  background:#35101c;
+  border-color:rgba(255,65,108,.35);
+}
+
+
+/* MODAL */
+
+#modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:rgba(0,0,0,.72);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.modalBox{
+  width:100%;
+  max-width:500px;
+  max-height:90vh;
+  overflow:auto;
+  background:#110c18;
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:20px;
+}
+
+.modalTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.modalTop h2{
+  margin:0;
   font-size:20px;
-
 }
 
-.close{
+.closeBtn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#170f20;
+  color:white;
+  font-size:20px;
+}
 
-  width:40px;
+.modalActions{
+  display:flex;
+  gap:8px;
+  margin-top:15px;
+}
 
-  height:40px;
-
-  padding:0;
-
-  border-radius:50%;
-
-  background:
-    rgba(255,255,255,.06);
-
+.modalActions button{
+  flex:1;
 }
 
 
-/* =========================
-   RESPONSIVO
-========================= */
+/* RESPONSIVO */
 
-@media(max-width:700px){
+@media(max-width:650px){
 
-  .wrap{
-    padding:12px;
+  .topIn{
+    flex-wrap:wrap;
   }
 
-  .formgrid{
-    grid-template-columns:1fr;
+  .brand{
+    min-width:100%;
   }
 
-  .full{
-    grid-column:auto;
+  .role{
+    flex:1;
   }
 
-  .top{
-    align-items:flex-start;
-  }
-
-  .top-right{
-    width:100%;
-    justify-content:flex-start;
+  .hero h1{
+    font-size:25px;
   }
 
   .grid{
     grid-template-columns:1fr;
   }
 
-  .hero{
-    padding:20px;
-  }
-
-  .row{
+  .clientItem{
     align-items:flex-start;
     flex-direction:column;
   }
 
-  .ra{
+  .clientActions{
     width:100%;
-    justify-content:flex-start;
+  }
+
+  .clientActions button{
+    flex:1;
   }
 
 }
@@ -955,150 +555,121 @@ button.small{
 <body>
 
 
-<!-- =========================
-     LOGIN ADM
-========================= -->
+<section id="login" class="hidden">
 
-<div
-  id="login"
-  class="login hidden"
->
+  <div class="loginBox">
 
-  <div class="box">
-
-    <div
-      class="logo"
-      style="margin-bottom:8px"
-    >
+    <div class="logoLogin">
       Painel do <span>ADM Way</span>
     </div>
 
-    <p class="muted">
-      Área exclusiva do administrador.
-    </p>
+    <div class="loginSub">
+      Acesso administrativo
+    </div>
 
     <form id="loginForm">
 
       <div class="field">
 
-        <label>
-          Número
+        <label for="phone">
+          Telefone
         </label>
 
         <input
           id="phone"
-          required
+          type="tel"
           autocomplete="username"
-          placeholder="Digite o número do ADM"
+          placeholder="Digite o telefone"
+          required
         >
 
       </div>
 
+
       <div class="field">
 
-        <label>
+        <label for="pass">
           Senha
         </label>
 
         <input
           id="pass"
           type="password"
-          required
           autocomplete="current-password"
           placeholder="Digite a senha"
+          required
         >
 
       </div>
 
+
+      <button
+        class="primary"
+        type="submit"
+      >
+        ENTRAR
+      </button>
+
       <div
         id="err"
-        style="
-          color:#ff6b8a;
-          font-size:14px;
-          margin-bottom:14px;
-        "
+        class="error"
       ></div>
 
       <button
-        type="submit"
-        style="width:100%"
+        type="button"
+        class="secondary"
+        style="width:100%;margin-top:10px"
+        onclick="closeAdminLogin()"
       >
-        ENTRAR NA ÁREA ADM
+        VOLTAR
       </button>
 
     </form>
 
-    <button
-      type="button"
-      class="secondary"
-      onclick="closeAdminLogin()"
-      style="
-        width:100%;
-        margin-top:10px;
-      "
-    >
-      VOLTAR
-    </button>
-
   </div>
 
-</div>
+</section>
 
 
-<!-- =========================
-     APLICAÇÃO
-========================= -->
+<section id="app" class="hidden">
 
-<div
-  id="app"
-  class="hidden"
->
+  <header class="top">
 
-  <div class="wrap">
+    <div class="topIn">
 
-
-    <!-- TOPO -->
-
-    <div class="top">
-
-      <div class="top-left">
-
-        <div class="logo">
-          Painel do <span>ADM Way</span>
-        </div>
-
-        <span
-          id="role"
-          class="role"
-        ></span>
-
+      <div class="brand">
+        Painel do <span>ADM Way</span>
       </div>
 
-
-      <div class="top-right">
-
-        <button
-          id="adminAccess"
-          class="secondary"
-          onclick="openAdminLogin()"
-        >
-          ⚙️ ÁREA ADM
-        </button>
-
-        <button
-          id="logoutBtn"
-          class="secondary hidden"
-          onclick="logout()"
-        >
-          SAIR
-        </button>
-
+      <div
+        id="role"
+        class="role"
+      >
+        VISITANTE
       </div>
+
+      <button
+        id="adminAccess"
+        class="topBtn"
+        onclick="openAdminLogin()"
+      >
+        ⚙️ ÁREA ADM
+      </button>
+
+      <button
+        id="logoutBtn"
+        class="topBtn hidden"
+        onclick="logout()"
+      >
+        SAIR
+      </button>
 
     </div>
 
+  </header>
 
-    <!-- HERO -->
+
+  <main class="container">
 
     <div class="hero">
 
@@ -1107,39 +678,29 @@ button.small{
       </h1>
 
       <p>
-        Encontre rapidamente as plataformas
-        disponíveis e acesse diretamente.
+        Acesse rapidamente as plataformas disponíveis.
       </p>
 
     </div>
 
 
-    <!-- =========================
-         ÁREA ADMIN
-    ========================= -->
-
     <section
       id="admin"
-      class="hidden"
+      class="adminBox hidden"
     >
 
       <div class="tabs">
 
         <button
-          id="tabPlatforms"
-          class="active"
-          onclick="
-            tab('plats',this)
-          "
+          class="tabBtn active"
+          onclick="tab('plats',this)"
         >
           Plataformas
         </button>
 
         <button
-          id="tabClients"
-          onclick="
-            tab('clients',this)
-          "
+          class="tabBtn"
+          onclick="tab('clients',this)"
         >
           Clientes
         </button>
@@ -1147,32 +708,22 @@ button.small{
       </div>
 
 
-      <!-- PLATAFORMAS ADMIN -->
-
       <div id="plats">
 
-        <div class="section-title">
+        <div class="adminHead">
 
-          <div>
-
-            <h2>
-              Gerenciar plataformas
-            </h2>
-
-            <span>
-              Adicione, edite ou exclua plataformas.
-            </span>
-
-          </div>
+          <h2>
+            Gerenciar plataformas
+          </h2>
 
           <button
+            class="addBtn"
             onclick="platformModal()"
           >
             + ADICIONAR
           </button>
 
         </div>
-
 
         <div
           id="adminGrid"
@@ -1182,28 +733,19 @@ button.small{
       </div>
 
 
-      <!-- CLIENTES ADMIN -->
-
       <div
         id="clients"
         class="hidden"
       >
 
-        <div class="section-title">
+        <div class="adminHead">
 
-          <div>
-
-            <h2>
-              Gerenciar clientes
-            </h2>
-
-            <span>
-              Contas cadastradas no sistema.
-            </span>
-
-          </div>
+          <h2>
+            Gerenciar clientes
+          </h2>
 
           <button
+            class="addBtn"
             onclick="clientModal()"
           >
             + ADICIONAR
@@ -1211,10 +753,9 @@ button.small{
 
         </div>
 
-
         <div
           id="clientList"
-          class="list"
+          class="clientList"
         ></div>
 
       </div>
@@ -1222,30 +763,11 @@ button.small{
     </section>
 
 
-    <!-- =========================
-         ÁREA PÚBLICA
-    ========================= -->
+    <section id="client">
 
-    <section
-      id="client"
-    >
-
-      <div class="section-title">
-
-        <div>
-
-          <h2>
-            Plataformas adicionadas recentemente
-          </h2>
-
-          <span>
-            Somente plataformas dos últimos 7 dias.
-          </span>
-
-        </div>
-
-      </div>
-
+      <h2 class="sectionTitle">
+        Plataformas adicionadas recentemente
+      </h2>
 
       <div
         id="recent"
@@ -1253,22 +775,9 @@ button.small{
       ></div>
 
 
-      <div class="section-title">
-
-        <div>
-
-          <h2>
-            Todas as plataformas
-          </h2>
-
-          <span>
-            Todas as plataformas disponíveis.
-          </span>
-
-        </div>
-
-      </div>
-
+      <h2 class="sectionTitle">
+        Todas as plataformas
+      </h2>
 
       <div
         id="all"
@@ -1277,29 +786,26 @@ button.small{
 
     </section>
 
+  </main>
 
-  </div>
+</section>
 
-</div>
-
-
-<!-- =========================
-     MODAL
-========================= -->
 
 <div
   id="modal"
-  class="modal hidden"
+  class="hidden"
 >
 
-  <div class="modalbox">
+  <div class="modalBox">
 
-    <div class="modalhead">
+    <div class="modalTop">
 
-      <h2 id="mt"></h2>
+      <h2 id="mt">
+        Modal
+      </h2>
 
       <button
-        class="close"
+        class="closeBtn"
         onclick="closeM()"
       >
         ×
@@ -1320,35 +826,28 @@ let me = null;
 
 let data = [];
 
+let editingPlatformId = null;
 
-/* =========================
-   ATALHOS
-========================= */
-
-const $ =
-  x => document.getElementById(x);
+let editingClientId = null;
 
 
-/* =========================
-   ESCAPAR HTML
-========================= */
+const $ = x =>
+  document.getElementById(x);
+
 
 const esc = s =>
-  String(s ?? "").replace(
-    /[&<>"']/g,
-    c => ({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#39;"
-    }[c])
-  );
+  String(s ?? "")
+    .replace(
+      /[&<>"']/g,
+      c => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      }[c])
+    );
 
-
-/* =========================
-   API
-========================= */
 
 async function api(
   url,
@@ -1359,35 +858,37 @@ async function api(
     await fetch(
       url,
       {
-        credentials:
-          "same-origin",
-
+        credentials:"same-origin",
+        ...options,
         headers:{
           "Content-Type":
-            "application/json"
-        },
-
-        ...options
+            "application/json",
+          ...(options.headers || {})
+        }
       }
     );
 
 
   let result = {};
 
-
   try{
 
     result =
       await response.json();
 
-  }catch{}
+  }catch{
+
+    result = {};
+
+  }
 
 
   if(!response.ok){
 
-    throw Error(
+    throw new Error(
       result.error ||
-      "Erro na solicitação."
+      result.message ||
+      "Erro na comunicação com o servidor."
     );
 
   }
@@ -1398,82 +899,39 @@ async function api(
 }
 
 
-/* =========================
-   INICIAR
-========================= */
-
-async function boot(){
-
-  try{
-
-    me =
-      (
-        await api(
-          "/api/auth/me"
-        )
-      ).user;
-
-    show();
-
-  }catch{
-
-    me = null;
-
-    showPublic();
-
-  }
-
-}
-
-
-/* =========================
-   MOSTRAR ÁREA PÚBLICA
-========================= */
-
 function showPublic(){
 
   $("login")
     .classList
     .add("hidden");
 
-
   $("app")
     .classList
     .remove("hidden");
-
 
   $("admin")
     .classList
     .add("hidden");
 
-
   $("client")
     .classList
     .remove("hidden");
-
 
   $("adminAccess")
     .classList
     .remove("hidden");
 
-
   $("logoutBtn")
     .classList
     .add("hidden");
 
-
   $("role").textContent =
     "VISITANTE";
-
 
   load();
 
 }
 
-
-/* =========================
-   MOSTRAR USUÁRIO LOGADO
-========================= */
 
 function show(){
 
@@ -1481,67 +939,50 @@ function show(){
     .classList
     .add("hidden");
 
-
   $("app")
     .classList
     .remove("hidden");
 
 
-  $("adminAccess")
-    .classList
-    .add("hidden");
+  if(me){
 
-
-  $("logoutBtn")
-    .classList
-    .remove("hidden");
-
-
-  $("role").textContent =
-    me?.role === "admin"
-      ? "ADMINISTRADOR"
-      : "CLIENTE";
-
-
-  if(
-    me &&
-    me.role === "admin"
-  ){
-
-    $("admin")
-      .classList
-      .remove("hidden");
-
-
-    $("client")
+    $("adminAccess")
       .classList
       .add("hidden");
 
-
-    load();
-
-  }else{
-
-    $("admin")
-      .classList
-      .add("hidden");
-
-
-    $("client")
+    $("logoutBtn")
       .classList
       .remove("hidden");
 
+    $("role").textContent =
+      me.role === "admin"
+        ? "ADMINISTRADOR"
+        : "CLIENTE";
 
-    load();
+
+    if(me.role === "admin"){
+
+      $("admin")
+        .classList
+        .remove("hidden");
+
+      $("client")
+        .classList
+        .add("hidden");
+
+      load();
+
+      return;
+
+    }
 
   }
 
+
+  showPublic();
+
 }
 
-
-/* =========================
-   ABRIR LOGIN ADM
-========================= */
 
 function openAdminLogin(){
 
@@ -1549,22 +990,15 @@ function openAdminLogin(){
     .classList
     .remove("hidden");
 
-
   $("app")
     .classList
     .add("hidden");
 
+  $("err").textContent = "";
 
-  $("err").textContent =
-    "";
+  $("phone").value = "";
 
-
-  $("phone").value =
-    "";
-
-  $("pass").value =
-    "";
-
+  $("pass").value = "";
 
   setTimeout(
     () => $("phone").focus(),
@@ -1574,16 +1008,11 @@ function openAdminLogin(){
 }
 
 
-/* =========================
-   FECHAR LOGIN ADM
-========================= */
-
 function closeAdminLogin(){
 
   $("login")
     .classList
     .add("hidden");
-
 
   $("app")
     .classList
@@ -1599,28 +1028,13 @@ function closeAdminLogin(){
 }
 
 
-/* =========================
-   LOGIN
-========================= */
-
 $("loginForm").onsubmit =
 async e => {
 
   e.preventDefault();
 
-
-  const button =
-    e.submitter;
-
-
-  if(button){
-    button.disabled =
-      true;
-  }
-
-
   $("err").textContent =
-    "";
+    "Entrando...";
 
 
   try{
@@ -1630,25 +1044,15 @@ async e => {
         "/api/auth/login",
         {
           method:"POST",
-
-          body:
-            JSON.stringify({
-
-              phone:
-                $("phone").value
-                  .trim(),
-
-              password:
-                $("pass").value
-
-            })
-
+          body:JSON.stringify({
+            phone:$("phone").value.trim(),
+            password:$("pass").value
+          })
         }
       );
 
 
-    me =
-      result.user;
+    me = result.user;
 
 
     if(
@@ -1656,7 +1060,7 @@ async e => {
       me.role !== "admin"
     ){
 
-      throw Error(
+      throw new Error(
         "Acesso permitido somente ao administrador."
       );
 
@@ -1669,24 +1073,12 @@ async e => {
   }catch(error){
 
     $("err").textContent =
-      error.message ||
-      "Senha incorreta.";
-
-  }finally{
-
-    if(button){
-      button.disabled =
-        false;
-    }
+      error.message;
 
   }
 
 };
 
-
-/* =========================
-   SAIR
-========================= */
 
 async function logout(){
 
@@ -1701,17 +1093,12 @@ async function logout(){
 
   }catch{}
 
-
   me = null;
 
   location.reload();
 
 }
 
-
-/* =========================
-   ABAS ADMIN
-========================= */
 
 function tab(
   id,
@@ -1727,35 +1114,23 @@ function tab(
     .add("hidden");
 
 
-  $("plats")
-    .classList
-    .toggle(
-      "hidden",
-      id !== "plats"
-    );
-
-  $("clients")
-    .classList
-    .toggle(
-      "hidden",
-      id !== "clients"
-    );
-
-
   document
-    .querySelectorAll(
-      ".tabs button"
-    )
+    .querySelectorAll(".tabBtn")
     .forEach(
-      item =>
-        item.classList
-          .remove("active")
+      b =>
+        b.classList.remove("active")
     );
+
+
+  $(id)
+    .classList
+    .remove("hidden");
 
 
   if(button){
 
-    button.classList
+    button
+      .classList
       .add("active");
 
   }
@@ -1769,11 +1144,6 @@ function tab(
 
 }
 
-
-/* =========================
-   CARREGAR PLATAFORMAS
-========================= */
-
 async function load(){
 
   try{
@@ -1783,39 +1153,44 @@ async function load(){
         "/api/platforms"
       );
 
-
     data =
       result.platforms ||
+      result ||
       [];
 
+    if(!Array.isArray(data)){
+
+      data = [];
+
+    }
 
     render();
 
   }catch(error){
 
-    data = [];
+    $("recent").innerHTML =
+      `
+        <div class="empty">
+          Não foi possível carregar as plataformas.
+          <br><br>
+          ${esc(error.message)}
+        </div>
+      `;
 
+    $("all").innerHTML = "";
 
-    $("recent").innerHTML = `
+    if(
+      $("adminGrid")
+    ){
 
-      <div class="empty">
+      $("adminGrid").innerHTML =
+        `
+          <div class="empty">
+            ${esc(error.message)}
+          </div>
+        `;
 
-        Não foi possível carregar
-        as plataformas.
-
-        <br><br>
-
-        ${esc(
-          error.message
-        )}
-
-      </div>
-
-    `;
-
-
-    $("all").innerHTML =
-      "";
+    }
 
   }
 
@@ -1832,8 +1207,8 @@ function card(
 ){
 
   const image =
-  platform.image_url ||
-  "";
+    platform.image_url ||
+    "";
 
 
   const description =
@@ -1845,6 +1220,42 @@ function card(
     esc(platform.url);
 
 
+  const imageHtml =
+    image
+      ?
+
+        `
+          <img
+            src="${esc(image)}"
+            alt="${esc(
+              platform.name
+            )}"
+            loading="lazy"
+            onerror="
+              this.style.display='none';
+              this.parentElement
+                .querySelector('.thumbFallback')
+                .style.display='block';
+            "
+          >
+
+          <div
+            class="thumbFallback"
+            style="display:none"
+          >
+            🌐
+          </div>
+        `
+
+      :
+
+        `
+          <div class="thumbFallback">
+            🌐
+          </div>
+        `;
+
+
   if(admin){
 
     return `
@@ -1853,16 +1264,7 @@ function card(
 
         <div class="thumb">
 
-          <img
-            src="${esc(image)}"
-            alt="${esc(
-              platform.name
-            )}"
-            loading="lazy"
-            onerror="
-              this.style.display='none'
-            "
-          >
+          ${imageHtml}
 
         </div>
 
@@ -1873,32 +1275,34 @@ function card(
             ${esc(platform.name)}
           </h3>
 
+
           <div class="desc">
+
             ${esc(description)}
+
           </div>
 
 
           <div class="actions">
 
+            <a
+              href="${safeUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              ACESSAR
+            </a>
+
+
             <button
-              class="secondary"
-              onclick='platformModal(
-                ${JSON.stringify(platform)
-                  .replace(
-                    /'/g,
-                    "&#39;"
-                  )}
-              )'
+              onclick="platformModal(${Number(platform.id)})"
             >
               EDITAR
             </button>
 
 
             <button
-              class="danger"
-              onclick="delP(
-                ${Number(platform.id)}
-              )"
+              onclick="delP(${Number(platform.id)})"
             >
               EXCLUIR
             </button>
@@ -1920,16 +1324,7 @@ function card(
 
       <div class="thumb">
 
-        <img
-          src="${esc(image)}"
-          alt="${esc(
-            platform.name
-          )}"
-          loading="lazy"
-          onerror="
-            this.style.display='none'
-          "
-        >
+        ${imageHtml}
 
       </div>
 
@@ -1970,98 +1365,88 @@ function card(
 
 
 /* =========================
-   RENDERIZAR
+   RENDERIZAÇÃO
 ========================= */
 
 function render(){
 
-  if(
-    me &&
-    me.role === "admin"
-  ){
+  const now =
+    Date.now();
 
-    $("adminGrid").innerHTML =
-      data.length
-
-        ? data
-            .map(
-              platform =>
-                card(
-                  platform,
-                  true
-                )
-            )
-            .join("")
-
-        : `
-          <div class="empty">
-            Nenhuma plataforma
-            cadastrada.
-          </div>
-        `;
-
-    return;
-
-  }
-
-
-  /*
-    PLATAFORMAS RECENTES:
-    SOMENTE OS ÚLTIMOS 7 DIAS
-  */
 
   const SEVEN_DAYS =
-    7 * 24 * 60 * 60 * 1000;
+    7 *
+    24 *
+    60 *
+    60 *
+    1000;
 
 
-  const recent =
+  const recentData =
     data.filter(
       platform => {
 
-        const created =
+        const date =
           new Date(
-            platform.created_at
+            platform.created_at ||
+            platform.createdAt ||
+            0
           ).getTime();
 
 
+        if(!date){
+
+          return false;
+
+        }
+
+
         return (
-          Date.now() - created
-          < SEVEN_DAYS
+          now - date <=
+          SEVEN_DAYS
         );
 
       }
     );
 
 
-  $("recent").innerHTML =
-    recent.length
+  if(recentData.length){
 
-      ? recent
-          .map(
-            platform =>
-              card(platform)
-          )
-          .join("")
+    $("recent").innerHTML =
+      recentData
+        .map(
+          platform =>
+            card(platform)
+        )
+        .join("");
 
-      : `
+  }else{
+
+    $("recent").innerHTML =
+      `
         <div class="empty">
-          Nenhuma plataforma nos
-          últimos 7 dias.
+          Nenhuma plataforma adicionada
+          recentemente.
         </div>
       `;
 
+  }
 
-  $("all").innerHTML =
-    data.length
 
-      ? data
-          .map(
-            platform =>
-              card(platform)
-          )
-          .join("")
+  if(data.length){
 
-      : `
+    $("all").innerHTML =
+      data
+        .map(
+          platform =>
+            card(platform)
+        )
+        .join("");
+
+  }else{
+
+    $("all").innerHTML =
+      `
         <div class="empty">
           Nenhuma plataforma cadastrada.
         </div>
@@ -2069,35 +1454,56 @@ function render(){
 
   }
 
-/* =========================
-   MODAL
-========================= */
 
-function openM(
-  title,
-  body
-){
+  if(
+    me &&
+    me.role === "admin"
+  ){
 
-  $("mt").textContent =
-    title;
+    if(data.length){
 
+      $("adminGrid").innerHTML =
+        data
+          .map(
+            platform =>
+              card(
+                platform,
+                true
+              )
+          )
+          .join("");
 
-  $("mb").innerHTML =
-    body;
+    }else{
 
+      $("adminGrid").innerHTML =
+        `
+          <div class="empty">
+            Nenhuma plataforma cadastrada.
+          </div>
+        `;
 
-  $("modal")
-    .classList
-    .remove("hidden");
+    }
+
+  }
 
 }
 
+
+/* =========================
+   FECHAR MODAL
+========================= */
 
 function closeM(){
 
   $("modal")
     .classList
     .add("hidden");
+
+  editingPlatformId =
+    null;
+
+  editingClientId =
+    null;
 
 }
 
@@ -2106,201 +1512,240 @@ function closeM(){
    MODAL PLATAFORMA
 ========================= */
 
-function platformModal(
-  platform = null
+async function platformModal(
+  id = null
 ){
 
-  openM(
+  editingPlatformId =
+    id;
 
+  let platform = null;
+
+
+  if(id){
+
+    platform =
+      data.find(
+        item =>
+          Number(item.id) ===
+          Number(id)
+      );
+
+
+    if(!platform){
+
+      try{
+
+        const result =
+          await api(
+            `/api/platforms/${id}`
+          );
+
+        platform =
+          result.platform;
+
+      }catch{}
+
+    }
+
+  }
+
+
+  $("mt").textContent =
     platform
       ? "Editar plataforma"
-      : "Adicionar plataforma",
+      : "Adicionar plataforma";
 
+
+  $("mb").innerHTML =
     `
-      <form id="pf">
 
-        <div class="formgrid">
+      <form
+        onsubmit="savePlatform(event)"
+      >
 
+        <div class="field">
 
-          <div class="field">
+          <label>
+            Nome
+          </label>
 
-            <label>
-              Nome
-            </label>
+          <input
+            id="pName"
+            value="${esc(
+              platform?.name ||
+              ""
+            )}"
+            placeholder="Nome da plataforma"
+            required
+          >
 
-            <input
-              id="pn"
-              required
-              value="${esc(
-                platform?.name || ""
-              )}"
-            >
-
-          </div>
-
-
-          <div class="field">
-
-            <label>
-              URL da plataforma
-            </label>
-
-            <input
-              id="pu"
-              type="url"
-              required
-              placeholder="https://exemplo.com"
-              value="${esc(
-                platform?.url || ""
-              )}"
-            >
-
-          </div>
+        </div>
 
 
-          <div class="field full">
+        <div class="field">
 
-            <label>
-              Descrição
-            </label>
+          <label>
+            Link da plataforma
+          </label>
 
-            <textarea
-              id="pd"
-            >${esc(
-              platform?.description || ""
-            )}</textarea>
+          <input
+            id="pUrl"
+            type="url"
+            value="${esc(
+              platform?.url ||
+              ""
+            )}"
+            placeholder="https://..."
+            required
+          >
 
-          </div>
-
-
-          <div class="field full">
-
-            <div class="auto-image-info">
-
-              🖼️ <b>Imagem automática</b><br>
-
-              Você não precisa colocar
-              nenhuma imagem.
-
-              O sistema vai tentar encontrar
-              automaticamente a imagem ou logo
-              da própria plataforma através
-              do link informado.
-
-            </div>
-
-          </div>
+        </div>
 
 
-          <div class="full">
+        <div class="field">
 
-            <button
-              id="savePlatform"
-              type="submit"
-              style="width:100%"
-            >
+          <label>
+            Descrição
+          </label>
 
-              ${
-                platform
-                  ? "SALVAR"
-                  : "ADICIONAR PLATAFORMA"
-              }
+          <textarea
+            id="pDescription"
+            placeholder="Descrição da plataforma"
+          >${esc(
+            platform?.description ||
+            ""
+          )}</textarea>
 
-            </button>
+        </div>
 
-          </div>
 
+        <div class="modalActions">
+
+          <button
+            type="button"
+            class="secondary"
+            onclick="closeM()"
+          >
+            CANCELAR
+          </button>
+
+
+          <button
+            type="submit"
+            class="primary"
+          >
+            SALVAR
+          </button>
 
         </div>
 
       </form>
-    `
-  );
+
+    `;
 
 
-  $("pf").onsubmit =
-  async e => {
+  $("modal")
+    .classList
+    .remove("hidden");
 
-    e.preventDefault();
+  }
 
+ async function savePlatform(e){
 
-    const button =
-      $("savePlatform");
-
-
-    button.disabled =
-      true;
+  e.preventDefault();
 
 
-    button.textContent =
-      platform
-        ? "SALVANDO..."
-        : "BUSCANDO IMAGEM...";
+  const name =
+    $("pName")
+      .value
+      .trim();
 
 
-    try{
+  const url =
+    $("pUrl")
+      .value
+      .trim();
+
+
+  const description =
+    $("pDescription")
+      .value
+      .trim();
+
+
+  if(!name){
+
+    alert(
+      "Digite o nome da plataforma."
+    );
+
+    return;
+
+  }
+
+
+  if(!url){
+
+    alert(
+      "Digite o link da plataforma."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    if(editingPlatformId){
 
       await api(
-
-        platform
-          ? "/api/platforms/" +
-            platform.id
-          : "/api/platforms",
-
+        `/api/platforms/${editingPlatformId}`,
         {
-
-          method:
-            platform
-              ? "PUT"
-              : "POST",
-
-
-          body:
-            JSON.stringify({
-
-              name:
-                $("pn").value.trim(),
-
-
-              url:
-                $("pu").value.trim(),
-
-
-              description:
-                $("pd").value.trim()
-
-            })
-
+          method:"PUT",
+          body:JSON.stringify({
+            name,
+            url,
+            description
+          })
         }
-
       );
 
+    }else{
 
-      closeM();
-
-
-      await load();
-
-
-    }catch(error){
-
-      button.disabled =
-        false;
-
-
-      button.textContent =
-        platform
-          ? "SALVAR"
-          : "ADICIONAR PLATAFORMA";
-
-
-      alert(
-        error.message
+      await api(
+        "/api/platforms",
+        {
+          method:"POST",
+          body:JSON.stringify({
+            name,
+            url,
+            description
+          })
+        }
       );
 
     }
 
-  };
+
+    closeM();
+
+    await load();
+
+
+    alert(
+      "Plataforma salva com sucesso!"
+    );
+
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
 
 }
 
@@ -2313,7 +1758,7 @@ async function delP(id){
 
   if(
     !confirm(
-      "Excluir plataforma?"
+      "Tem certeza que deseja excluir esta plataforma?"
     )
   ){
 
@@ -2325,14 +1770,10 @@ async function delP(id){
   try{
 
     await api(
-
-      "/api/platforms/" +
-      id,
-
+      `/api/platforms/${id}`,
       {
         method:"DELETE"
       }
-
     );
 
 
@@ -2360,102 +1801,107 @@ async function clients(){
 
     const result =
       await api(
-        "/api/clients"
+        "/api/admin/clients"
       );
 
 
-    const clients =
-      result.clients || [];
+    const list =
+      result.clients ||
+      [];
 
 
-    $("clientList").innerHTML =
+    if(!list.length){
 
-      clients.length
-
-        ? clients
-            .map(
-              client => `
-
-                <div class="row">
-
-                  <div>
-
-                    <b>
-                      ${esc(
-                        client.phone
-                      )}
-                    </b>
-
-                    <br>
-
-                    <small
-                      class="muted"
-                    >
-
-                      ${new Date(
-                        client.created_at
-                      ).toLocaleDateString(
-                        "pt-BR"
-                      )}
-
-                    </small>
-
-                  </div>
-
-
-                  <div class="ra">
-
-                    <button
-                      class="secondary"
-                      onclick='clientModal(
-                        ${JSON.stringify(client)
-                          .replace(
-                            /'/g,
-                            "&#39;"
-                          )}
-                      )'
-                    >
-                      EDITAR
-                    </button>
-
-
-                    <button
-                      class="danger"
-                      onclick="delC(
-                        ${Number(client.id)}
-                      )"
-                    >
-                      EXCLUIR
-                    </button>
-
-                  </div>
-
-                </div>
-
-              `
-            )
-            .join("")
-
-        : `
+      $("clientList").innerHTML =
+        `
           <div class="empty">
-            Nenhum cliente.
+            Nenhum cliente cadastrado.
           </div>
         `;
 
+      return;
+
+    }
+
+
+    $("clientList").innerHTML =
+      list
+        .map(
+          client => `
+
+            <div class="clientItem">
+
+              <div class="clientInfo">
+
+                <strong>
+                  ${esc(
+                    client.name ||
+                    client.phone ||
+                    "Cliente"
+                  )}
+                </strong>
+
+
+                <small>
+                  Telefone:
+                  ${esc(
+                    client.phone ||
+                    "-"
+                  )}
+                </small>
+
+
+                <small>
+                  Tipo:
+                  ${esc(
+                    client.role ||
+                    "client"
+                  )}
+                </small>
+
+              </div>
+
+
+              <div class="clientActions">
+
+                <button
+                  class="smallBtn"
+                  onclick="clientModal(${Number(client.id)})"
+                >
+                  EDITAR
+                </button>
+
+
+                <button
+                  class="smallBtn red"
+                  onclick="delC(${Number(client.id)})"
+                >
+                  EXCLUIR
+                </button>
+
+              </div>
+
+            </div>
+
+          `
+        )
+        .join("");
 
   }catch(error){
 
-    $("clientList").innerHTML = `
+    $("clientList").innerHTML =
+      `
+        <div class="empty">
 
-      <div class="empty">
+          Não foi possível carregar
+          os clientes.
 
-        ${esc(
-          error.message
-        )}
+          <br><br>
 
-      </div>
+          ${esc(error.message)}
 
-    `;
+        </div>
+      `;
 
   }
 
@@ -2466,18 +1912,86 @@ async function clients(){
    MODAL CLIENTE
 ========================= */
 
-function clientModal(
-  client = null
+async function clientModal(
+  id = null
 ){
 
-  openM(
+  editingClientId =
+    id;
 
+  let client = null;
+
+
+  if(id){
+
+    try{
+
+      const result =
+        await api(
+          `/api/admin/clients/${id}`
+        );
+
+
+      client =
+        result.client;
+
+
+    }catch{
+
+      try{
+
+        const result =
+          await api(
+            "/api/admin/clients"
+          );
+
+
+        client =
+          (result.clients || [])
+            .find(
+              c =>
+                Number(c.id) ===
+                Number(id)
+            );
+
+
+      }catch{}
+
+    }
+
+  }
+
+
+  $("mt").textContent =
     client
       ? "Editar cliente"
-      : "Adicionar cliente",
+      : "Adicionar cliente";
 
+
+  $("mb").innerHTML =
     `
-      <form id="cf">
+
+      <form
+        onsubmit="saveClient(event)"
+      >
+
+        <div class="field">
+
+          <label>
+            Nome
+          </label>
+
+          <input
+            id="cName"
+            value="${esc(
+              client?.name ||
+              ""
+            )}"
+            placeholder="Nome do cliente"
+          >
+
+        </div>
+
 
         <div class="field">
 
@@ -2486,11 +2000,14 @@ function clientModal(
           </label>
 
           <input
-            id="cp"
-            required
+            id="cPhone"
+            type="tel"
             value="${esc(
-              client?.phone || ""
+              client?.phone ||
+              ""
             )}"
+            placeholder="Telefone"
+            required
           >
 
         </div>
@@ -2499,102 +2016,147 @@ function clientModal(
         <div class="field">
 
           <label>
-
-            ${
-              client
-                ? "Nova senha (opcional)"
-                : "Senha"
-            }
-
+            Senha
           </label>
 
-
           <input
-            id="cs"
+            id="cPassword"
             type="password"
-            ${
+            placeholder="${
               client
-                ? ""
-                : "required"
-            }
+                ? "Deixe vazio para manter"
+                : "Senha"
+            }"
+            ${client ? "" : "required"}
           >
 
         </div>
 
 
-        <button
-          type="submit"
-          style="width:100%"
-        >
+        <div class="modalActions">
 
-          ${
-            client
-              ? "SALVAR"
-              : "CRIAR CLIENTE"
-          }
+          <button
+            type="button"
+            class="secondary"
+            onclick="closeM()"
+          >
+            CANCELAR
+          </button>
 
-        </button>
+
+          <button
+            type="submit"
+            class="primary"
+          >
+            SALVAR
+          </button>
+
+        </div>
 
       </form>
-    `
-  );
+
+    `;
 
 
-  $("cf").onsubmit =
-  async e => {
+  $("modal")
+    .classList
+    .remove("hidden");
 
-    e.preventDefault();
+  }
+
+ async function saveClient(e){
+
+  e.preventDefault();
 
 
-    try{
+  const name =
+    $("cName")
+      .value
+      .trim();
+
+
+  const phone =
+    $("cPhone")
+      .value
+      .trim();
+
+
+  const password =
+    $("cPassword")
+      .value;
+
+
+  if(!phone){
+
+    alert(
+      "Digite o telefone."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    if(editingClientId){
+
+      const body = {
+        name,
+        phone
+      };
+
+
+      if(password){
+
+        body.password =
+          password;
+
+      }
+
 
       await api(
-
-        client
-          ? "/api/clients/" +
-            client.id
-          : "/api/clients",
-
+        `/api/admin/clients/${editingClientId}`,
         {
-
-          method:
-            client
-              ? "PUT"
-              : "POST",
-
-
-          body:
-            JSON.stringify({
-
-              phone:
-                $("cp").value.trim(),
-
-
-              password:
-                $("cs").value
-
-            })
-
+          method:"PUT",
+          body:JSON.stringify(body)
         }
-
       );
 
+    }else{
 
-      closeM();
-
-
-      await clients();
-
-
-    }catch(error){
-
-      alert(
-        error.message
+      await api(
+        "/api/admin/clients",
+        {
+          method:"POST",
+          body:JSON.stringify({
+            name,
+            phone,
+            password
+          })
+        }
       );
 
     }
 
-  };
+
+    closeM();
+
+    await clients();
+
+
+    alert(
+      "Cliente salvo com sucesso!"
+    );
+
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
 
 }
 
@@ -2607,7 +2169,7 @@ async function delC(id){
 
   if(
     !confirm(
-      "Excluir cliente?"
+      "Tem certeza que deseja excluir este cliente?"
     )
   ){
 
@@ -2619,14 +2181,10 @@ async function delC(id){
   try{
 
     await api(
-
-      "/api/clients/" +
-      id,
-
+      `/api/admin/clients/${id}`,
       {
         method:"DELETE"
       }
-
     );
 
 
@@ -2641,26 +2199,59 @@ async function delC(id){
 
   }
 
-      }
-
- <!-- =========================
-     FINAL DO SISTEMA
-========================= -->
+}
 
 
-<script>
+/* =========================
+   INICIALIZAÇÃO
+========================= */
 
-/*
-  Fechamento do JavaScript.
-  O sistema inicia automaticamente
-  mostrando as plataformas públicas.
-*/
+async function boot(){
+
+  try{
+
+    const result =
+      await api(
+        "/api/auth/me"
+      );
+
+
+    me =
+      result.user ||
+      null;
+
+
+    if(
+      me &&
+      me.role === "admin"
+    ){
+
+      show();
+
+      return;
+
+    }
+
+
+    me = null;
+
+    showPublic();
+
+
+  }catch{
+
+    me = null;
+
+    showPublic();
+
+  }
+
+  }
 
 boot();
 
 </script>
 
-
 </body>
 
-</html> 
+</html>  
