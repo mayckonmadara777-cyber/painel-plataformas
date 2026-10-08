@@ -431,99 +431,76 @@ function extractMetaImage(
    BUSCAR IMAGEM AUTOMÁTICA
 ========================= */
 
+ 
 async function findPlatformImage(
   platformUrl
 ) {
 
-  if (
-    !isHttpUrl(platformUrl)
-  ) {
-
+  if (!isHttpUrl(platformUrl)) {
     return "";
-
   }
-
 
   try {
 
     const controller =
       new AbortController();
 
-
     const timeout =
       setTimeout(
         () => controller.abort(),
-        12000
+        15000
       );
-
 
     const response =
       await fetch(
         platformUrl,
         {
           method: "GET",
-
           redirect: "follow",
-
-          signal:
-            controller.signal,
+          signal: controller.signal,
 
           headers: {
-
             "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
+              "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131 Mobile Safari/537.36",
 
             "Accept":
-              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
 
+            "Accept-Language":
+              "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
           }
-
         }
       );
 
-
     clearTimeout(timeout);
 
-
     if (!response.ok) {
-
       throw new Error(
         `HTTP ${response.status}`
       );
-
     }
-
 
     const contentType =
       response.headers.get(
         "content-type"
       ) || "";
 
-
     if (
-      !contentType.includes(
-        "text/html"
-      )
+      !contentType.includes("text/html")
     ) {
-
       return "";
-
     }
-
 
     const finalUrl =
       response.url ||
       platformUrl;
 
-
     const html =
       await response.text();
 
-
     /*
-      1. PRIMEIRO:
-      imagem principal definida
-      pelo próprio site.
+      1. IMAGEM PRINCIPAL
+      DO PRÓPRIO SITE
     */
 
     const metaImage =
@@ -532,43 +509,35 @@ async function findPlatformImage(
         finalUrl
       );
 
-
     if (metaImage) {
-
       return metaImage;
-
     }
 
 
     /*
-      2. SE NÃO EXISTIR OG IMAGE:
-      procurar imagens da própria página.
+      2. PROCURAR IMAGENS
+      DENTRO DA PÁGINA
     */
 
-    const imageCandidates = [];
+    const candidates = [];
 
     let match;
 
-
     const imgRegex =
-      /<img[^>]+(?:src|data-src|data-lazy-src)\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
+      /<img[^>]*(?:src|data-src|data-lazy-src|data-original)\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
     while (
       (match =
-        imgRegex.exec(html)) !==
-      null
+        imgRegex.exec(html)) !== null
     ) {
 
       const src =
-        String(match[1])
+        String(match[1] || "")
           .trim();
-
 
       if (!src) {
         continue;
       }
-
 
       const resolved =
         resolveImageUrl(
@@ -576,69 +545,93 @@ async function findPlatformImage(
           finalUrl
         );
 
-
       if (
         resolved &&
         isHttpUrl(resolved)
       ) {
 
-        imageCandidates.push(
+        const lower =
+          resolved.toLowerCase();
+
+        if (
+          lower.includes("pixel") ||
+          lower.includes("tracking") ||
+          lower.includes("spacer") ||
+          lower.includes("1x1") ||
+          lower.endsWith(".svg") ||
+          lower.includes("logo-placeholder") ||
+          lower.includes("placeholder")
+        ) {
+          continue;
+        }
+
+        candidates.push(
           resolved
         );
-
       }
-
     }
 
 
     /*
-      Remove imagens pequenas,
-      SVGs, rastreadores e arquivos
-      obviamente irrelevantes.
+      3. TENTAR ENCONTRAR
+      LOGO DA PLATAFORMA
+    */
+
+    const logoRegex =
+      /<img[^>]*(?:class|id|alt)\s*=\s*["'][^"']*(?:logo|brand)[^"']*["'][^>]*(?:src|data-src|data-lazy-src)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
+    while (
+      (match =
+        logoRegex.exec(html)) !== null
+    ) {
+
+      const src =
+        String(match[1] || "")
+          .trim();
+
+      if (!src) {
+        continue;
+      }
+
+      const resolved =
+        resolveImageUrl(
+          src,
+          finalUrl
+        );
+
+      if (
+        resolved &&
+        isHttpUrl(resolved)
+      ) {
+        candidates.unshift(
+          resolved
+        );
+      }
+    }
+
+
+    /*
+      4. DEVOLVE A PRIMEIRA
+      IMAGEM VÁLIDA
     */
 
     for (
-      const image of imageCandidates
+      const image of candidates
     ) {
 
-      const lower =
-        image.toLowerCase();
-
-
       if (
-        lower.includes(
-          "pixel"
-        ) ||
-        lower.includes(
-          "tracking"
-        ) ||
-        lower.includes(
-          "spacer"
-        ) ||
-        lower.endsWith(
-          ".svg"
-        ) ||
-        lower.includes(
-          "1x1"
-        )
+        image &&
+        isHttpUrl(image)
       ) {
-
-        continue;
-
+        return image;
       }
-
-
-      return image;
 
     }
 
 
     /*
-      3. ÚLTIMO RECURSO:
-      procurar favicon próprio
-      da plataforma.
-      
-      NÃO usa Google.
+      5. FAVICON ORIGINAL
+      DA PRÓPRIA PLATAFORMA
     */
 
     try {
@@ -647,7 +640,6 @@ async function findPlatformImage(
         new URL(
           finalUrl
         ).origin;
-
 
       return (
         origin +
@@ -660,7 +652,6 @@ async function findPlatformImage(
 
     }
 
-
   } catch (error) {
 
     console.log(
@@ -668,11 +659,9 @@ async function findPlatformImage(
       error.message
     );
 
-
     /*
-      Mesmo se a página bloquear
-      o acesso, tenta o favicon
-      original da própria plataforma.
+      Se o site bloquear,
+      tenta o favicon original.
     */
 
     try {
@@ -682,7 +671,6 @@ async function findPlatformImage(
           platformUrl
         ).origin;
 
-
       return (
         origin +
         "/favicon.ico"
@@ -696,8 +684,8 @@ async function findPlatformImage(
 
   }
 
-}
-
+}    
+      
 
 /* =========================
    BANCO DE DADOS
