@@ -349,6 +349,7 @@ app.get("/api/health", async (req, res) => {
 ========================= */
 
 app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
   try {
     const phone = normalizePhone(req.body.phone);
     const password = String(req.body.password || "");
@@ -358,6 +359,79 @@ app.post("/api/auth/login", async (req, res) => {
         error: "Informe telefone e senha."
       });
     }
+
+    /*
+      ADMIN
+      O administrador continua usando
+      ADMIN_PHONE + ADMIN_PASSWORD.
+    */
+
+    const adminPhone =
+      normalizePhone(process.env.ADMIN_PHONE);
+
+    if (phone === adminPhone) {
+      const adminPassword =
+        String(process.env.ADMIN_PASSWORD);
+
+      if (password !== adminPassword) {
+        return res.status(401).json({
+          error: "Senha incorreta."
+        });
+      }
+
+      const adminResult = await pool.query(
+        `SELECT
+          id,
+          phone,
+          password_hash,
+          role
+         FROM users
+         WHERE phone = $1
+         LIMIT 1`,
+        [adminPhone]
+      );
+
+      if (!adminResult.rowCount) {
+        return res.status(500).json({
+          error: "Administrador não encontrado."
+        });
+      }
+
+      const admin = adminResult.rows[0];
+
+      const token = createToken({
+        id: admin.id,
+        phone: admin.phone,
+        role: "admin"
+      });
+
+      res.cookie("panel_token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      return res.json({
+        ok: true,
+        user: {
+          id: admin.id,
+          phone: admin.phone,
+          role: "admin"
+        }
+      });
+    }
+
+    /*
+      CLIENTE
+      Se o telefone já existir:
+      - senha correta = entra
+      - senha errada = senha incorreta
+
+      Se o telefone não existir:
+      - cria automaticamente
+      - entra imediatamente
+    */
 
     const result = await pool.query(
       `SELECT
@@ -371,48 +445,104 @@ app.post("/api/auth/login", async (req, res) => {
       [phone]
     );
 
-    if (!result.rowCount) {
-      return res.status(401).json({
-        error: "Telefone ou senha inválidos."
+    if (result.rowCount) {
+      const user = result.rows[0];
+
+      const validPassword =
+        await bcrypt.compare(
+          password,
+          user.password_hash
+        );
+
+      if (!validPassword) {
+        return res.status(401).json({
+          error: "Senha incorreta."
+        });
+      }
+
+      const token = createToken(user);
+
+      res.cookie("panel_token", token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      return res.json({
+        ok: true,
+        user: {
+          id: user.id,
+          phone: user.phone,
+          role: user.role
+        }
       });
     }
 
-    const user = result.rows[0];
+    /*
+      TELEFONE NOVO:
+      cria automaticamente como cliente.
+    */
 
-    const validPassword = await bcrypt.compare(
-      password,
-      user.password_hash
+    const passwordHash =
+      await bcrypt.hash(password, 12);
+
+    const newUser =
+      await pool.query(
+        `INSERT INTO users
+         (phone, password_hash, role)
+         VALUES ($1, $2, 'client')
+         RETURNING
+         id,
+         phone,
+         role`,
+        [
+          phone,
+          passwordHash
+        ]
+      );
+
+    const user =
+      newUser.rows[0];
+
+    const token =
+      createToken(user);
+
+    res.cookie(
+      "panel_token",
+      token,
+      {
+        httpOnly: true,
+        sameSite: "lax",
+        secure:
+          process.env.NODE_ENV ===
+          "production",
+        maxAge:
+          7 * 24 * 60 * 60 * 1000
+      }
     );
 
-    if (!validPassword) {
-      return res.status(401).json({
-        error: "Telefone ou senha inválidos."
-      });
-    }
-
-    const token = createToken(user);
-
-    res.cookie("panel_token", token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    });
-
-    res.json({
+    return res.status(201).json({
       ok: true,
+      created: true,
       user: {
         id: user.id,
         phone: user.phone,
         role: user.role
       }
     });
+
   } catch (error) {
-    console.error(error);
+
+    console.error(
+      "Erro no login:",
+      error
+    );
 
     res.status(500).json({
       error: "Erro interno no login."
     });
+
   }
 });
 
