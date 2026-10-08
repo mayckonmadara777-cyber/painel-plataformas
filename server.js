@@ -8,7 +8,14 @@ const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+
+const PORT =
+  process.env.PORT || 10000;
+
+
+/* =========================
+   VARIÁVEIS OBRIGATÓRIAS
+========================= */
 
 for (const key of [
   "DATABASE_URL",
@@ -16,20 +23,40 @@ for (const key of [
   "ADMIN_PHONE",
   "ADMIN_PASSWORD"
 ]) {
+
   if (!process.env[key]) {
+
     console.error(
       `Variável obrigatória ausente: ${key}`
     );
+
     process.exit(1);
   }
 }
 
+
+/* =========================
+   BANCO DE DADOS
+========================= */
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL.includes("localhost")
-    ? false
-    : { rejectUnauthorized: false }
+  connectionString:
+    process.env.DATABASE_URL,
+
+  ssl:
+    process.env.DATABASE_URL.includes(
+      "localhost"
+    )
+      ? false
+      : {
+          rejectUnauthorized: false
+        }
 });
+
+
+/* =========================
+   MIDDLEWARES
+========================= */
 
 app.use(
   express.json({
@@ -43,33 +70,49 @@ app.use(
   })
 );
 
-app.use(cookieParser());
+app.use(
+  cookieParser()
+);
 
 
 /* =========================
-   FUNÇÕES DE AUTENTICAÇÃO
+   NORMALIZAR TELEFONE
 ========================= */
 
 function normalizePhone(value) {
+
   return String(value || "")
     .replace(/\D/g, "");
+
 }
 
 
+/* =========================
+   CRIAR TOKEN
+========================= */
+
 function createToken(user) {
+
   return jwt.sign(
     {
       id: user.id,
       phone: user.phone,
       role: user.role
     },
+
     process.env.JWT_SECRET,
+
     {
       expiresIn: "7d"
     }
   );
+
 }
 
+
+/* =========================
+   AUTENTICAÇÃO
+========================= */
 
 function auth(req, res, next) {
 
@@ -79,19 +122,25 @@ function auth(req, res, next) {
       req.cookies.panel_token;
 
     if (!token) {
+
       return res.status(401).json({
-        error: "Não autenticado."
+        error:
+          "Não autenticado."
       });
+
     }
 
-    req.user = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+
+    req.user =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
 
     next();
 
-  } catch {
+  } catch (error) {
 
     return res.status(401).json({
       error:
@@ -99,12 +148,24 @@ function auth(req, res, next) {
     });
 
   }
+
 }
 
 
-function adminOnly(req, res, next) {
+/* =========================
+   SOMENTE ADMIN
+========================= */
 
-  if (req.user?.role !== "admin") {
+function adminOnly(
+  req,
+  res,
+  next
+) {
+
+  if (
+    req.user?.role !==
+    "admin"
+  ) {
 
     return res.status(403).json({
       error:
@@ -114,11 +175,12 @@ function adminOnly(req, res, next) {
   }
 
   next();
+
 }
 
 
 /* =========================
-   IMAGEM AUTOMÁTICA
+   VALIDAR URL
 ========================= */
 
 function isHttpUrl(value) {
@@ -129,17 +191,24 @@ function isHttpUrl(value) {
       new URL(value);
 
     return (
-      parsed.protocol === "http:" ||
-      parsed.protocol === "https:"
+      parsed.protocol ===
+        "http:" ||
+      parsed.protocol ===
+        "https:"
     );
 
-  } catch {
+  } catch (error) {
 
     return false;
 
   }
+
 }
 
+
+/* =========================
+   RESOLVER IMAGEM
+========================= */
 
 function resolveImageUrl(
   imageUrl,
@@ -153,13 +222,18 @@ function resolveImageUrl(
       pageUrl
     ).toString();
 
-  } catch {
+  } catch (error) {
 
     return "";
 
   }
+
 }
 
+
+/* =========================
+   EXTRAIR IMAGEM DO SITE
+========================= */
 
 function extractMetaImage(
   html,
@@ -168,14 +242,17 @@ function extractMetaImage(
 
   const candidates = [];
 
+  let match;
+
+
   const metaRegex =
     /<meta[^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]+content\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
-  let match;
 
   while (
     (match =
-      metaRegex.exec(html)) !== null
+      metaRegex.exec(html)) !==
+    null
   ) {
 
     const key =
@@ -186,6 +263,7 @@ function extractMetaImage(
     const value =
       String(match[2])
         .trim();
+
 
     if (
       [
@@ -204,12 +282,14 @@ function extractMetaImage(
   }
 
 
-  const metaReverse =
+  const reverseMetaRegex =
     /<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
 
   while (
     (match =
-      metaReverse.exec(html)) !== null
+      reverseMetaRegex.exec(html)) !==
+    null
   ) {
 
     const value =
@@ -220,6 +300,7 @@ function extractMetaImage(
       String(match[2])
         .toLowerCase()
         .trim();
+
 
     if (
       [
@@ -241,9 +322,11 @@ function extractMetaImage(
   const linkRegex =
     /<link[^>]+rel\s*=\s*["']([^"']+)["'][^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
+
   while (
     (match =
-      linkRegex.exec(html)) !== null
+      linkRegex.exec(html)) !==
+    null
   ) {
 
     const rel =
@@ -253,6 +336,7 @@ function extractMetaImage(
     const href =
       String(match[2])
         .trim();
+
 
     if (
       rel.includes(
@@ -265,7 +349,9 @@ function extractMetaImage(
     ) {
 
       if (href) {
+
         candidates.push(href);
+
       }
 
     }
@@ -273,12 +359,14 @@ function extractMetaImage(
   }
 
 
-  const linkReverse =
+  const reverseLinkRegex =
     /<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']([^"']+)["'][^>]*>/gi;
+
 
   while (
     (match =
-      linkReverse.exec(html)) !== null
+      reverseLinkRegex.exec(html)) !==
+    null
   ) {
 
     const href =
@@ -288,6 +376,7 @@ function extractMetaImage(
     const rel =
       String(match[2])
         .toLowerCase();
+
 
     if (
       rel.includes(
@@ -300,7 +389,9 @@ function extractMetaImage(
     ) {
 
       if (href) {
+
         candidates.push(href);
+
       }
 
     }
@@ -318,6 +409,7 @@ function extractMetaImage(
         pageUrl
       );
 
+
     if (
       resolved &&
       isHttpUrl(resolved)
@@ -329,9 +421,15 @@ function extractMetaImage(
 
   }
 
+
   return "";
+
 }
 
+
+/* =========================
+   BUSCAR IMAGEM AUTOMÁTICA
+========================= */
 
 async function findPlatformImage(
   platformUrl
@@ -340,13 +438,17 @@ async function findPlatformImage(
   if (
     !isHttpUrl(platformUrl)
   ) {
+
     return "";
+
   }
+
 
   try {
 
     const controller =
       new AbortController();
+
 
     const timeout =
       setTimeout(
@@ -354,48 +456,64 @@ async function findPlatformImage(
         10000
       );
 
+
     const response =
       await fetch(
         platformUrl,
         {
           method: "GET",
+
           redirect: "follow",
+
           signal:
             controller.signal,
 
           headers: {
+
             "User-Agent":
               "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131 Safari/537.36",
 
             "Accept":
               "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+
           }
+
         }
       );
 
+
     clearTimeout(timeout);
 
+
     if (!response.ok) {
+
       throw new Error(
         `HTTP ${response.status}`
       );
+
     }
+
 
     const contentType =
       response.headers.get(
         "content-type"
       ) || "";
 
+
     if (
       !contentType.includes(
         "text/html"
       )
     ) {
+
       return "";
+
     }
+
 
     const html =
       await response.text();
+
 
     const image =
       extractMetaImage(
@@ -404,16 +522,13 @@ async function findPlatformImage(
           platformUrl
       );
 
-    if (image) {
 
-      console.log(
-        "Imagem encontrada automaticamente:",
-        image
-      );
+    if (image) {
 
       return image;
 
     }
+
 
     try {
 
@@ -423,17 +538,21 @@ async function findPlatformImage(
             platformUrl
         ).hostname;
 
+
       if (domain) {
 
         return (
           "https://www.google.com/s2/favicons?domain=" +
-          encodeURIComponent(domain) +
+          encodeURIComponent(
+            domain
+          ) +
           "&sz=256"
         );
 
       }
 
-    } catch {}
+    } catch (error) {}
+
 
     return "";
 
@@ -444,6 +563,7 @@ async function findPlatformImage(
       error.message
     );
 
+
     try {
 
       const domain =
@@ -451,17 +571,21 @@ async function findPlatformImage(
           platformUrl
         ).hostname;
 
+
       if (domain) {
 
         return (
           "https://www.google.com/s2/favicons?domain=" +
-          encodeURIComponent(domain) +
+          encodeURIComponent(
+            domain
+          ) +
           "&sz=256"
         );
 
       }
 
-    } catch {}
+    } catch (error) {}
+
 
     return "";
 
@@ -531,8 +655,17 @@ async function initDatabase() {
 
     await pool.query(
       `INSERT INTO users
-       (phone, password_hash, role)
-       VALUES ($1, $2, 'admin')`,
+       (
+         phone,
+         password_hash,
+         role
+       )
+       VALUES
+       (
+         $1,
+         $2,
+         'admin'
+       )`,
       [
         adminPhone,
         passwordHash
@@ -559,7 +692,7 @@ async function initDatabase() {
 
 
 /* =========================
-   TESTE DO SERVIDOR
+   HEALTH
 ========================= */
 
 app.get(
@@ -581,6 +714,7 @@ app.get(
     } catch (error) {
 
       console.error(error);
+
 
       res.status(500).json({
         ok: false,
@@ -608,13 +742,17 @@ app.post(
           req.body.phone
         );
 
+
       const password =
         String(
           req.body.password || ""
         );
 
 
-      if (!phone || !password) {
+      if (
+        !phone ||
+        !password
+      ) {
 
         return res.status(400).json({
           error:
@@ -624,9 +762,9 @@ app.post(
       }
 
 
-      /*
-        ADMIN
-      */
+      /* =====================
+         ADMIN
+      ===================== */
 
       const adminPhone =
         normalizePhone(
@@ -700,17 +838,24 @@ app.post(
           {
             httpOnly: true,
             sameSite: "lax",
+
             secure:
               process.env.NODE_ENV ===
               "production",
+
             maxAge:
-              7 * 24 * 60 * 60 * 1000
+              7 *
+              24 *
+              60 *
+              60 *
+              1000
           }
         );
 
 
         return res.json({
           ok: true,
+
           user: {
             id: admin.id,
             phone: admin.phone,
@@ -721,9 +866,9 @@ app.post(
       }
 
 
-      /*
-        CLIENTE EXISTENTE
-      */
+      /* =====================
+         CLIENTE EXISTENTE
+      ===================== */
 
       const result =
         await pool.query(
@@ -739,7 +884,9 @@ app.post(
         );
 
 
-      if (result.rowCount) {
+      if (
+        result.rowCount
+      ) {
 
         const user =
           result.rows[0];
@@ -752,7 +899,9 @@ app.post(
           );
 
 
-        if (!validPassword) {
+        if (
+          !validPassword
+        ) {
 
           return res.status(401).json({
             error:
@@ -772,17 +921,24 @@ app.post(
           {
             httpOnly: true,
             sameSite: "lax",
+
             secure:
               process.env.NODE_ENV ===
               "production",
+
             maxAge:
-              7 * 24 * 60 * 60 * 1000
+              7 *
+              24 *
+              60 *
+              60 *
+              1000
           }
         );
 
 
         return res.json({
           ok: true,
+
           user: {
             id: user.id,
             phone: user.phone,
@@ -793,10 +949,9 @@ app.post(
       }
 
 
-      /*
-        CLIENTE NOVO
-        CRIA AUTOMATICAMENTE
-      */
+      /* =====================
+         CLIENTE NOVO
+      ===================== */
 
       const passwordHash =
         await bcrypt.hash(
@@ -808,12 +963,21 @@ app.post(
       const newUser =
         await pool.query(
           `INSERT INTO users
-           (phone, password_hash, role)
-           VALUES ($1, $2, 'client')
+           (
+             phone,
+             password_hash,
+             role
+           )
+           VALUES
+           (
+             $1,
+             $2,
+             'client'
+           )
            RETURNING
-           id,
-           phone,
-           role`,
+             id,
+             phone,
+             role`,
           [
             phone,
             passwordHash
@@ -835,11 +999,17 @@ app.post(
         {
           httpOnly: true,
           sameSite: "lax",
+
           secure:
             process.env.NODE_ENV ===
             "production",
+
           maxAge:
-            7 * 24 * 60 * 60 * 1000
+            7 *
+            24 *
+            60 *
+            60 *
+            1000
         }
       );
 
@@ -847,6 +1017,7 @@ app.post(
       return res.status(201).json({
         ok: true,
         created: true,
+
         user: {
           id: user.id,
           phone: user.phone,
@@ -895,6 +1066,10 @@ app.post(
 );
 
 
+/* =========================
+   USUÁRIO LOGADO
+========================= */
+
 app.get(
   "/api/auth/me",
   auth,
@@ -909,7 +1084,7 @@ app.get(
 
 
 /* =========================
-   PLATAFORMAS
+   LISTAR PLATAFORMAS
 ========================= */
 
 app.get(
@@ -940,7 +1115,11 @@ app.get(
 
     } catch (error) {
 
-      console.error(error);
+      console.error(
+        "Erro ao carregar plataformas:",
+        error
+      );
+
 
       res.status(500).json({
         error:
@@ -998,12 +1177,6 @@ app.post(
       }
 
 
-      console.log(
-        "Procurando imagem automática:",
-        url.trim()
-      );
-
-
       const imageUrl =
         await findPlatformImage(
           url.trim()
@@ -1019,7 +1192,13 @@ app.post(
              description,
              image_url
            )
-           VALUES ($1, $2, $3, $4)
+           VALUES
+           (
+             $1,
+             $2,
+             $3,
+             $4
+           )
            RETURNING
              id,
              name,
@@ -1076,7 +1255,9 @@ app.put(
     try {
 
       const id =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
 
       const {
@@ -1112,12 +1293,6 @@ app.put(
         });
 
       }
-
-
-      console.log(
-        "Atualizando imagem automática:",
-        url.trim()
-      );
 
 
       const imageUrl =
@@ -1204,7 +1379,9 @@ app.delete(
     try {
 
       const id =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
 
       const result =
@@ -1302,7 +1479,7 @@ app.get(
 
 
 /* =========================
-   CLIENTES - CRIAR PELO ADM
+   CLIENTES - CRIAR
 ========================= */
 
 app.post(
@@ -1317,6 +1494,7 @@ app.post(
         normalizePhone(
           req.body.phone
         );
+
 
       const password =
         String(
@@ -1341,7 +1519,8 @@ app.post(
         await pool.query(
           `SELECT id
            FROM users
-           WHERE phone = $1`,
+           WHERE phone = $1
+           LIMIT 1`,
           [phone]
         );
 
@@ -1428,12 +1607,16 @@ app.put(
     try {
 
       const id =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
+
 
       const phone =
         normalizePhone(
           req.body.phone
         );
+
 
       const password =
         String(
@@ -1583,7 +1766,9 @@ app.delete(
     try {
 
       const id =
-        Number(req.params.id);
+        Number(
+          req.params.id
+        );
 
 
       const result =
@@ -1646,33 +1831,41 @@ app.use(
 );
 
 
-app.use(
-  (req, res, next) => {
+/* =========================
+   ROTA PRINCIPAL
+========================= */
+
+app.get(
+  "*",
+  (req, res) => {
 
     if (
-      req.method === "GET" &&
-      !req.path.startsWith(
+      req.path.startsWith(
         "/api/"
       )
     ) {
 
-      return res.sendFile(
-        path.join(
-          __dirname,
-          "index.html"
-        )
-      );
+      return res.status(404).json({
+        error:
+          "Rota não encontrada."
+      });
 
     }
 
-    next();
+
+    res.sendFile(
+      path.join(
+        __dirname,
+        "index.html"
+      )
+    );
 
   }
 );
 
 
 /* =========================
-   INICIAR SERVIDOR
+   INICIAR BANCO E SERVIDOR
 ========================= */
 
 initDatabase()
