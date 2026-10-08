@@ -1195,7 +1195,6 @@ app.get(
 
 app.get(
   "/api/platforms",
-  auth,
   async (req, res) => {
 
     try {
