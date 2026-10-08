@@ -718,7 +718,48 @@ async function findPlatformImage(
 
     }
 
+/*
+  PLANO B AUTOMÁTICO:
+  BAIXAR UMA PRÉ-VISUALIZAÇÃO
+  DA PÁGINA DA PLATAFORMA
+*/
 
+try {
+
+  const screenshotUrl =
+    "https://s.wordpress.com/mshots/v1/" +
+    encodeURIComponent(platformUrl) +
+    "?w=600";
+
+  console.log(
+    "Tentando imagem alternativa:",
+    platformUrl
+  );
+
+  const screenshot =
+    await downloadImageAsDataUrl(
+      screenshotUrl
+    );
+
+  if (screenshot) {
+
+    console.log(
+      "Pré-visualização baixada com sucesso."
+    );
+
+    return screenshot;
+
+  }
+
+} catch (error) {
+
+  console.log(
+    "Pré-visualização indisponível:",
+    error.message
+  );
+
+}
+    
     /*
       ÚLTIMA TENTATIVA:
       FAVICON DA PRÓPRIA PLATAFORMA
