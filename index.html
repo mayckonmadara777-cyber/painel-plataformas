@@ -1832,14 +1832,8 @@ function card(
 ){
 
   const image =
-    platform.image_url ||
-    (
-      "https://www.google.com/s2/favicons" +
-      "?sz=256&domain_url=" +
-      encodeURIComponent(
-        platform.url
-      )
-    );
+  platform.image_url ||
+  "";
 
 
   const description =
