@@ -1,147 +1,1399 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel de Plataformas</title>
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#05030b;color:#fff;min-height:100vh}
-    button,input,textarea{font:inherit}
-    button{cursor:pointer;border:0}
-    .hidden{display:none!important}
-    .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 20% 10%,#4c12a955,transparent 35%),radial-gradient(circle at 90% 90%,#7b22ce44,transparent 35%),#05030b}
-    .login-card{width:min(420px,100%);padding:30px;border:1px solid #8b2cff55;border-radius:24px;background:#0b0718ee;box-shadow:0 0 45px #7c22cc22}
-    .logo{font-size:28px;font-weight:900;margin-bottom:8px}.logo span{color:#a855f7}
-    .muted{color:#a8a0b8}
-    .field{margin-top:16px}.field label{display:block;font-size:13px;color:#c9bfd7;margin-bottom:7px}
-    input,textarea{width:100%;padding:13px 14px;border:1px solid #342353;background:#0b0815;color:#fff;border-radius:12px;outline:none}
-    input:focus,textarea:focus{border-color:#a855f7;box-shadow:0 0 0 3px #a855f722}
-    textarea{min-height:90px;resize:vertical}
-    .btn{padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:800}
-    .btn.secondary{background:#171126;border:1px solid #352253}.btn.danger{background:#6f1730}
-    .app{min-height:100vh;display:flex}
-    .sidebar{width:240px;background:#090611;border-right:1px solid #21152f;padding:22px 14px;position:fixed;inset:0 auto 0 0}
-    .brand{font-weight:900;font-size:20px;padding:8px 10px 25px}.brand span{color:#a855f7}
-    .nav button{display:block;width:100%;text-align:left;padding:12px 14px;background:transparent;color:#bcb3c9;border-radius:11px;margin:4px 0}
-    .nav button.active,.nav button:hover{background:#7c3aed;color:#fff}
-    .main{margin-left:240px;width:calc(100% - 240px);padding:24px}
-    .top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px}
-    .title{font-size:26px;font-weight:900}
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-    .stat,.card{background:#0b0716;border:1px solid #251737;border-radius:18px;padding:18px}
-    .stat strong{font-size:28px;display:block;margin-top:8px}.stat span{color:#9f95ab;font-size:13px}
-    .section{margin-top:22px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
-    .section h2{font-size:18px;margin:0}
-    .platform-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
-    .platform{overflow:hidden;background:#0b0716;border:1px solid #28183b;border-radius:17px;padding:12px}
-    .platform img{width:100%;height:135px;object-fit:cover;border-radius:12px;background:#171022}
-    .platform .noimg{height:135px;border-radius:12px;background:linear-gradient(135deg,#170c29,#27113c);display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#a855f7}
-    .platform h3{font-size:16px;margin:12px 0 6px}.platform p{font-size:12px;color:#aaa0b2;min-height:32px}
-    .actions{display:flex;gap:8px}.actions .btn{flex:1;padding:9px;font-size:12px}
-    .table{width:100%;border-collapse:collapse}.table th,.table td{text-align:left;padding:12px 8px;border-bottom:1px solid #21152f;font-size:13px}.table th{color:#a99fb3}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.full{grid-column:1/-1}
-    .toast{position:fixed;right:18px;bottom:18px;background:#140d20;border:1px solid #8b2cff66;padding:13px 16px;border-radius:12px;box-shadow:0 10px 30px #0008;z-index:20}
-    @media(max-width:900px){.sidebar{width:70px;padding:12px 8px}.brand{font-size:0}.brand:first-letter{font-size:24px}.nav button{font-size:0;text-align:center}.nav button::first-letter{font-size:18px}.main{margin-left:70px;width:calc(100% - 70px);padding:16px}.grid{grid-template-columns:1fr}.platform-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid{grid-template-columns:1fr}}
-    @media(max-width:520px){.platform-grid{grid-template-columns:1fr 1fr}.top{align-items:flex-start}.title{font-size:21px}.table th:nth-child(2),.table td:nth-child(2){display:none}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MK Painel</title>
+
+<style>
+:root{
+  --bg:#07050b;
+  --card:#110c18;
+  --p:#9b4dff;
+  --p2:#c66bff;
+  --txt:#f7f2ff;
+  --muted:#a99bb8;
+  --line:#2b193d;
+  --danger:#ff5275;
+}
+
+*{
+  box-sizing:border-box
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top,#1c0b2b,#07050b 48%);
+  color:var(--txt);
+  font-family:system-ui,Arial,sans-serif
+}
+
+.hidden{
+  display:none!important
+}
+
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:16px
+}
+
+.login{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:18px
+}
+
+.box{
+  width:min(430px,100%);
+  background:#110c18ef;
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 0 45px #9b4dff25
+}
+
+.logo{
+  font-size:26px;
+  font-weight:900
+}
+
+.logo b{
+  color:var(--p2)
+}
+
+.muted{
+  color:var(--muted)
+}
+
+.field{
+  margin:12px 0
+}
+
+.field label{
+  display:block;
+  font-size:13px;
+  margin-bottom:6px;
+  color:#d4c8dd
+}
+
+input,
+textarea{
+  width:100%;
+  padding:13px;
+  border-radius:12px;
+  border:1px solid #382248;
+  background:#0a0710;
+  color:white;
+  outline:0
+}
+
+textarea{
+  min-height:90px
+}
+
+input:focus,
+textarea:focus{
+  border-color:var(--p)
+}
+
+button,
+.btn{
+  border:0;
+  border-radius:12px;
+  padding:11px 14px;
+  font-weight:800;
+  color:white;
+  background:linear-gradient(135deg,#7e31e8,#b85cff);
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block
+}
+
+.secondary{
+  background:#21152c
+}
+
+.danger{
+  background:#42101e;
+  color:#ff9aae
+}
+
+.small{
+  font-size:13px;
+  padding:9px 11px
+}
+
+.top,
+.section-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+
+.top{
+  padding:8px 0 20px
+}
+
+.hero{
+  background:#9b4dff18;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:18px
+}
+
+.hero h1{
+  margin:0 0 5px
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:18px
+}
+
+.tab{
+  background:#0e0913;
+  border:1px solid var(--line)
+}
+
+.tab.active{
+  background:#2a173b;
+  border-color:#783db0
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:14px
+}
+
+.card{
+  background:#110c18;
+  border:1px solid var(--line);
+  border-radius:18px;
+  overflow:hidden
+}
+
+.thumb{
+  height:125px;
+  background:#0b0810;
+  display:grid;
+  place-items:center
+}
+
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover
+}
+
+.ph{
+  font-size:36px;
+  color:var(--p2)
+}
+
+.body{
+  padding:14px
+}
+
+.body h3{
+  margin:0 0 6px
+}
+
+.desc{
+  color:var(--muted);
+  font-size:13px;
+  min-height:36px
+}
+
+.actions{
+  display:flex;
+  gap:7px;
+  margin-top:12px
+}
+
+.actions>*{
+  flex:1;
+  text-align:center
+}
+
+.panel{
+  background:#110c18;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:17px;
+  margin-bottom:18px
+}
+
+.formgrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+
+.full{
+  grid-column:1/-1
+}
+
+.list{
+  display:grid;
+  gap:9px
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+  background:#0d0912;
+  border:1px solid #261635;
+  border-radius:13px
+}
+
+.ra{
+  display:flex;
+  gap:7px
+}
+
+.empty{
+  border:1px dashed #39234a;
+  border-radius:16px;
+  padding:24px;
+  text-align:center;
+  color:var(--muted);
+  grid-column:1/-1
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#000b;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  z-index:5
+}
+
+.modalbox{
+  width:min(560px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:#100b16;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:20px
+}
+
+.modalhead{
+  display:flex;
+  justify-content:space-between
+}
+
+.close{
+  background:none;
+  font-size:26px;
+  padding:0
+}
+
+@media(max-width:650px){
+
+  .formgrid{
+    grid-template-columns:1fr
+  }
+
+  .full{
+    grid-column:auto
+  }
+
+  .grid{
+    grid-template-columns:1fr 1fr
+  }
+
+  .row{
+    flex-direction:column;
+    align-items:flex-start
+  }
+
+  .ra{
+    width:100%
+  }
+
+  .ra>*{
+    flex:1
+  }
+
+  .top{
+    align-items:flex-start
+  }
+}
+</style>
 </head>
+
 <body>
+
+<!-- LOGIN -->
+
 <div id="login" class="login">
-  <div class="login-card">
-    <div class="logo">PAINEL <span>PLATAFORMAS</span></div>
-    <p class="muted">Entre com seu número e senha para continuar.</p>
+
+  <div class="box">
+
+    <div class="logo">
+      MK <b>PAINEL</b>
+    </div>
+
+    <p class="muted">
+      Entre para acessar o painel.
+    </p>
+
     <form id="loginForm">
-      <div class="field"><label>Número de telefone</label><input id="loginPhone" inputmode="numeric" placeholder="Ex.: 82999999999" required></div>
-      <div class="field"><label>Senha</label><input id="loginPassword" type="password" placeholder="Sua senha" required></div>
-      <button class="btn" style="width:100%;margin-top:18px">Entrar</button>
+
+      <div class="field">
+        <label>Telefone</label>
+        <input
+          id="phone"
+          inputmode="tel"
+          required
+        >
+      </div>
+
+      <div class="field">
+        <label>Senha</label>
+        <input
+          id="pass"
+          type="password"
+          required
+        >
+      </div>
+
+      <button style="width:100%">
+        ENTRAR
+      </button>
+
+      <p id="err" class="muted"></p>
+
     </form>
+
   </div>
+
 </div>
 
-<div id="app" class="app hidden">
-  <aside class="sidebar">
-    <div class="brand">P<span>✦</span></div>
-    <div id="nav" class="nav"></div>
-  </aside>
-  <main class="main">
-    <div class="top">
-      <div><div id="pageTitle" class="title">Início</div><div id="hello" class="muted"></div></div>
-      <button class="btn secondary" onclick="logout()">Sair</button>
+
+<!-- PAINEL -->
+
+<div id="app" class="hidden">
+
+  <div class="wrap">
+
+    <header class="top">
+
+      <div class="logo">
+        MK <b>PAINEL</b>
+      </div>
+
+      <div>
+
+        <span
+          id="role"
+          class="muted"
+        ></span>
+
+        <button
+          class="secondary small"
+          onclick="logout()"
+        >
+          Sair
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <div class="hero">
+
+      <h1 id="title">
+        Painel
+      </h1>
+
+      <div class="muted">
+        Suas plataformas organizadas em um só lugar.
+      </div>
+
     </div>
-    <div id="content"></div>
-  </main>
+
+
+    <!-- ADMIN -->
+
+    <div id="admin" class="hidden">
+
+      <div class="tabs">
+
+        <button
+          class="tab active"
+          onclick="tab('plats',this)"
+        >
+          Plataformas
+        </button>
+
+        <button
+          class="tab"
+          onclick="tab('clients',this)"
+        >
+          Clientes
+        </button>
+
+      </div>
+
+
+      <section id="plats">
+
+        <div class="section-title">
+
+          <h2>
+            Plataformas
+          </h2>
+
+          <button onclick="platformModal()">
+            + Adicionar
+          </button>
+
+        </div>
+
+        <div
+          id="adminGrid"
+          class="grid"
+        ></div>
+
+      </section>
+
+
+      <section
+        id="clients"
+        class="hidden"
+      >
+
+        <div class="section-title">
+
+          <h2>
+            Clientes
+          </h2>
+
+          <button onclick="clientModal()">
+            + Adicionar
+          </button>
+
+        </div>
+
+        <div
+          id="clientList"
+          class="list"
+        ></div>
+
+      </section>
+
+    </div>
+
+
+    <!-- CLIENTE -->
+
+    <div id="client" class="hidden">
+
+      <div class="section-title">
+
+        <h2>
+          Plataformas adicionadas recentemente
+        </h2>
+
+      </div>
+
+      <div
+        id="recent"
+        class="grid"
+      ></div>
+
+
+      <div class="section-title">
+
+        <h2>
+          Todas as plataformas
+        </h2>
+
+      </div>
+
+      <div
+        id="all"
+        class="grid"
+      ></div>
+
+    </div>
+
+  </div>
+
 </div>
-<div id="toast" class="toast hidden"></div>
+
+
+<!-- MODAL -->
+
+<div
+  id="modal"
+  class="modal hidden"
+>
+
+  <div class="modalbox">
+
+    <div class="modalhead">
+
+      <h2 id="mt"></h2>
+
+      <button
+        class="close"
+        onclick="closeM()"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div id="mb"></div>
+
+  </div>
+
+</div>
+
 
 <script>
-const state={user:null,platforms:[],users:[],page:"home",editing:null};
 
-function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.remove("hidden");setTimeout(()=>el.classList.add("hidden"),2800)}
-async function api(url,opts={}){const r=await fetch(url,{headers:{"Content-Type":"application/json",...(opts.headers||{})},...opts});let d={};try{d=await r.json()}catch{}if(!r.ok)throw new Error(d.error||"Erro");return d}
-function escapeHtml(v=""){return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function platformCard(p,admin=false){
-  const img=p.image_url?`<img src="${escapeHtml(p.image_url)}" alt="" onerror="this.style.display='none'">`:`<div class="noimg">${escapeHtml((p.name||"?")[0].toUpperCase())}</div>`;
-  return `<div class="platform">${img}<h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.description||"Acesse a plataforma pelo botão abaixo.")}</p><div class="actions"><a class="btn" href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer">ACESSAR</a>${admin?`<button class="btn secondary" onclick="editPlatform(${p.id})">Editar</button><button class="btn danger" onclick="deletePlatform(${p.id})">Excluir</button>`:""}</div></div>`;
+let me = null;
+let data = [];
+
+const $ = x =>
+  document.getElementById(x);
+
+
+const esc = s =>
+  String(s ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c])
+  );
+
+
+async function api(url, options = {}) {
+
+  const response = await fetch(
+    url,
+    {
+      credentials:"same-origin",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      ...options
+    }
+  );
+
+  let data = {};
+
+  try {
+    data = await response.json();
+  } catch {}
+
+  if (!response.ok) {
+    throw Error(
+      data.error || "Erro"
+    );
+  }
+
+  return data;
 }
-function nav(){
-  const items=state.user.role==="admin"
-    ? [["home","⌂ Início"],["clients","♙ Clientes"],["platforms","▣ Plataformas"],["new","＋ Cadastrar Plataforma"]]
-    : [["home","⌂ Início"],["recent","◷ Recentes"],["all","▣ Todas as Plataformas"]];
-  document.getElementById("nav").innerHTML=items.map(([id,label])=>`<button class="${state.page===id?"active":""}" onclick="go('${id}')">${label}</button>`).join("");
+
+
+/* =========================
+   INICIALIZAÇÃO
+========================= */
+
+async function boot(){
+
+  try{
+
+    me =
+      (await api("/api/auth/me")).user;
+
+    show();
+
+  }catch{
+
+  }
+
 }
-function go(page){state.page=page;nav();render()}
+
+
+/* =========================
+   MOSTRAR PAINEL
+========================= */
+
+function show(){
+
+  $("login")
+    .classList
+    .add("hidden");
+
+  $("app")
+    .classList
+    .remove("hidden");
+
+
+  $("role").textContent =
+    me.role === "admin"
+      ? "ADMIN"
+      : "CLIENTE";
+
+
+  $("title").textContent =
+    me.role === "admin"
+      ? "Área administrativa"
+      : "Área do cliente";
+
+
+  if(me.role === "admin"){
+
+    $("admin")
+      .classList
+      .remove("hidden");
+
+    load();
+
+  }else{
+
+    $("client")
+      .classList
+      .remove("hidden");
+
+    load();
+
+  }
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+$("loginForm").onsubmit =
+async e => {
+
+  e.preventDefault();
+
+  $("err").textContent = "";
+
+  try{
+
+    me =
+      (
+        await api(
+          "/api/auth/login",
+          {
+            method:"POST",
+
+            body:JSON.stringify({
+              phone:$("phone").value,
+              password:$("pass").value
+            })
+          }
+        )
+      ).user;
+
+    show();
+
+  }catch(error){
+
+    $("err").textContent =
+      error.message;
+
+  }
+
+};
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout(){
+
+  await api(
+    "/api/auth/logout",
+    {
+      method:"POST"
+    }
+  );
+
+  location.reload();
+
+}
+
+
+/* =========================
+   ABAS ADMIN
+========================= */
+
+function tab(id, button){
+
+  document
+    .querySelectorAll("#admin>section")
+    .forEach(section =>
+      section.classList.add("hidden")
+    );
+
+
+  $(id)
+    .classList
+    .remove("hidden");
+
+
+  document
+    .querySelectorAll(".tab")
+    .forEach(tab =>
+      tab.classList.remove("active")
+    );
+
+
+  button.classList.add("active");
+
+}
+
+
+/* =========================
+   CARREGAR DADOS
+========================= */
+
 async function load(){
-  const me=await api("/api/me");state.user=me.user;
-  const p=await api("/api/platforms");state.platforms=p.platforms;
-  document.getElementById("login").classList.add("hidden");document.getElementById("app").classList.remove("hidden");
-  document.getElementById("hello").textContent=state.user.role==="admin"?"Administrador":"Área do cliente";
-  nav();render();
+
+  data =
+    (
+      await api("/api/platforms")
+    ).platforms;
+
+
+  render();
+
+
+  if(me.role === "admin"){
+    clients();
+  }
+
 }
+
+
+/* =========================
+   CARD PLATAFORMA
+========================= */
+
+function card(platform, admin = false){
+
+  const image =
+    platform.image_url
+      ? `<img src="${esc(platform.image_url)}">`
+      : `<div class="ph">✦</div>`;
+
+
+  const actions = admin
+
+    ? `
+      <button
+        onclick='platformModal(${JSON.stringify(platform).replace(/'/g,"&#39;")})'
+      >
+        Editar
+      </button>
+
+      <button
+        class="danger"
+        onclick="delP(${platform.id})"
+      >
+        Excluir
+      </button>
+    `
+
+    : `
+      <a
+        class="btn"
+        href="${esc(platform.url)}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        ACESSAR
+      </a>
+    `;
+
+
+  return `
+    <div class="card">
+
+      <div class="thumb">
+        ${image}
+      </div>
+
+      <div class="body">
+
+        <h3>
+          ${esc(platform.name)}
+        </h3>
+
+        <div class="desc">
+          ${esc(
+            platform.description ||
+            "Sem descrição"
+          )}
+        </div>
+
+        <div class="actions">
+          ${actions}
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
 function render(){
-  const title={home:"Início",clients:"Clientes",platforms:"Plataformas",new:"Cadastrar Plataforma",recent:"Plataformas Adicionadas Recentemente",all:"Todas as Plataformas"}[state.page]||"Início";
-  document.getElementById("pageTitle").textContent=title;
-  const c=document.getElementById("content");
-  if(state.user.role==="admin"){renderAdmin(c);return}
-  renderClient(c);
+
+  if(me.role === "admin"){
+
+    $("adminGrid").innerHTML =
+      data.length
+
+        ? data
+            .map(platform =>
+              card(platform,true)
+            )
+            .join("")
+
+        : `
+          <div class="empty">
+            Nenhuma plataforma cadastrada.
+          </div>
+        `;
+
+    return;
+
+  }
+
+
+  /*
+    7 DIAS = 604800000 MILISSEGUNDOS
+  */
+
+  const recent =
+    data.filter(platform => {
+
+      const created =
+        new Date(
+          platform.created_at
+        ).getTime();
+
+      return (
+        Date.now() - created
+        < 604800000
+      );
+
+    });
+
+
+  $("recent").innerHTML =
+    recent.length
+
+      ? recent
+          .map(platform =>
+            card(platform)
+          )
+          .join("")
+
+      : `
+        <div class="empty">
+          Nenhuma plataforma nos últimos 7 dias.
+        </div>
+      `;
+
+
+  $("all").innerHTML =
+    data.length
+
+      ? data
+          .map(platform =>
+            card(platform)
+          )
+          .join("")
+
+      : `
+        <div class="empty">
+          Nenhuma plataforma cadastrada.
+        </div>
+      `;
+
 }
-function renderAdmin(c){
-  if(state.page==="home"){c.innerHTML=`<div class="grid"><div class="stat"><span>Clientes</span><strong>${state.users.length||"—"}</strong></div><div class="stat"><span>Plataformas</span><strong>${state.platforms.length}</strong></div><div class="stat"><span>Recentes</span><strong>${state.platforms.filter(p=>Date.now()-new Date(p.created_at)<7*86400000).length}</strong></div></div><div class="section card"><div class="section-head"><h2>Últimas plataformas</h2><button class="btn secondary" onclick="go('platforms')">Ver todas</button></div><div class="platform-grid">${state.platforms.slice(0,4).map(p=>platformCard(p,true)).join("")||'<p class="muted">Nenhuma plataforma cadastrada.</p>'}</div></div>`;loadUsers();return}
-  if(state.page==="clients"){c.innerHTML=`<div class="card"><div class="section-head"><h2>Clientes cadastrados</h2><button class="btn" onclick="newClient()">+ Cadastrar cliente</button></div><div id="clientsTable"><p class="muted">Carregando...</p></div></div>`;loadUsers();return}
-  if(state.page==="platforms"){c.innerHTML=`<div class="section-head"><h2>Plataformas cadastradas</h2><button class="btn" onclick="go('new')">+ Nova plataforma</button></div><div class="platform-grid">${state.platforms.map(p=>platformCard(p,true)).join("")||'<p class="muted">Nenhuma plataforma.</p>'}</div>`;return}
-  if(state.page==="new"){const p=state.editing||{};c.innerHTML=`<div class="card"><h2>${state.editing?"Editar":"Cadastrar"} plataforma</h2><div class="form-grid"><div class="field"><label>Nome da plataforma</label><input id="pName" value="${escapeHtml(p.name||"")}"></div><div class="field"><label>Link da plataforma</label><input id="pUrl" value="${escapeHtml(p.url||"")}" placeholder="https://..."></div><div class="field full"><label>Descrição (opcional)</label><textarea id="pDesc">${escapeHtml(p.description||"")}</textarea></div><div class="field full"><label>URL da foto/logo (opcional)</label><input id="pImage" value="${escapeHtml(p.image_url||"")}" placeholder="https://.../imagem.jpg"></div></div><button class="btn" style="margin-top:16px" onclick="savePlatform()">${state.editing?"Salvar alterações":"Cadastrar plataforma"}</button></div>`}
+
+
+/* =========================
+   MODAL
+========================= */
+
+function openM(title, body){
+
+  $("mt").textContent = title;
+
+  $("mb").innerHTML = body;
+
+  $("modal")
+    .classList
+    .remove("hidden");
+
 }
-async function loadUsers(){
-  if(state.user.role!=="admin")return;
-  try{const d=await api("/api/admin/users");state.users=d.users;
-    const el=document.getElementById("clientsTable");
-    if(el)el.innerHTML=state.users.length?`<table class="table"><thead><tr><th>Número</th><th>Cadastro</th><th>Ações</th></tr></thead><tbody>${state.users.map(u=>`<tr><td>${escapeHtml(u.phone)}</td><td>${new Date(u.created_at).toLocaleDateString("pt-BR")}</td><td><button class="btn danger" onclick="deleteUser(${u.id})">Remover</button></td></tr>`).join("")}</tbody></table>`:'<p class="muted">Nenhum cliente cadastrado.</p>';
-    // A tela de início já está renderizada; apenas atualizamos os números na próxima navegação.
-  }catch(e){toast(e.message)}
+
+
+function closeM(){
+
+  $("modal")
+    .classList
+    .add("hidden");
+
 }
-function renderClient(c){
-  const recent=state.platforms.filter(p=>Date.now()-new Date(p.created_at)<7*86400000);
-  if(state.page==="home"||state.page==="recent"){c.innerHTML=`<div class="card"><h2>Plataformas adicionadas recentemente</h2><p class="muted">Novidades dos últimos 7 dias.</p><div class="platform-grid">${recent.map(p=>platformCard(p)).join("")||'<p class="muted">Nenhuma plataforma nova no momento.</p>'}</div></div>`;return}
-  if(state.page==="all"){c.innerHTML=`<div class="card"><div class="section-head"><div><h2>Todas as plataformas</h2><p class="muted">Aqui ficam todas as plataformas disponíveis.</p></div></div><div class="platform-grid">${state.platforms.map(p=>platformCard(p)).join("")||'<p class="muted">Nenhuma plataforma cadastrada.</p>'}</div></div>`}
+
+
+/* =========================
+   PLATAFORMA
+========================= */
+
+function platformModal(platform = null){
+
+  openM(
+
+    platform
+      ? "Editar plataforma"
+      : "Adicionar plataforma",
+
+    `
+      <form id="pf">
+
+        <div class="formgrid">
+
+          <div class="field">
+
+            <label>
+              Nome
+            </label>
+
+            <input
+              id="pn"
+              required
+              value="${esc(
+                platform?.name || ""
+              )}"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              URL
+            </label>
+
+            <input
+              id="pu"
+              type="url"
+              required
+              value="${esc(
+                platform?.url || ""
+              )}"
+            >
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Descrição
+            </label>
+
+            <textarea id="pd">${esc(
+              platform?.description || ""
+            )}</textarea>
+
+          </div>
+
+
+          <div class="field full">
+
+            <label>
+              Imagem/logo (URL)
+            </label>
+
+            <input
+              id="pi"
+              type="url"
+              value="${esc(
+                platform?.image_url || ""
+              )}"
+            >
+
+          </div>
+
+
+          <div class="full">
+
+            <button
+              style="width:100%"
+            >
+              ${
+                platform
+                  ? "SALVAR"
+                  : "ADICIONAR"
+              }
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+    `
+  );
+
+
+  $("pf").onsubmit =
+  async e => {
+
+    e.preventDefault();
+
+    try{
+
+      await api(
+
+        platform
+          ? "/api/platforms/" +
+            platform.id
+          : "/api/platforms",
+
+        {
+          method:
+            platform
+              ? "PUT"
+              : "POST",
+
+          body:
+            JSON.stringify({
+
+              name:$("pn").value,
+
+              url:$("pu").value,
+
+              description:
+                $("pd").value,
+
+              image_url:
+                $("pi").value
+
+            })
+
+        }
+
+      );
+
+
+      closeM();
+
+      await load();
+
+    }catch(error){
+
+      alert(error.message);
+
+    }
+
+  };
+
 }
-function newClient(){
-  const phone=prompt("Número do cliente:");
-  if(phone===null)return;
-  const password=prompt("Senha do cliente (mínimo 4 caracteres):");
-  if(password===null)return;
-  api("/api/admin/users",{method:"POST",body:JSON.stringify({phone,password})}).then(()=>{toast("Cliente cadastrado.");loadUsers()}).catch(e=>toast(e.message));
+
+
+/* =========================
+   EXCLUIR PLATAFORMA
+========================= */
+
+async function delP(id){
+
+  if(
+    confirm(
+      "Excluir plataforma?"
+    )
+  ){
+
+    await api(
+      "/api/platforms/" + id,
+      {
+        method:"DELETE"
+      }
+    );
+
+    await load();
+
+  }
+
 }
-function deleteUser(id){if(!confirm("Remover este cliente?"))return;api("/api/admin/users/"+id,{method:"DELETE"}).then(()=>{toast("Cliente removido.");loadUsers()}).catch(e=>toast(e.message))}
-function editPlatform(id){state.editing=state.platforms.find(p=>p.id===id);go("new")}
-function savePlatform(){
-  const body={name:document.getElementById("pName").value,url:document.getElementById("pUrl").value,description:document.getElementById("pDesc").value,image_url:document.getElementById("pImage").value};
-  const id=state.editing?.id;
-  api(id?"/api/admin/platforms/"+id:"/api/admin/platforms",{method:id?"PUT":"POST",body:JSON.stringify(body)}).then(()=>{toast(id?"Alterações salvas.":"Plataforma cadastrada.");state.editing=null;return api("/api/platforms")}).then(d=>{state.platforms=d.platforms;go("platforms")}).catch(e=>toast(e.message));
+
+
+/* =========================
+   CLIENTES
+========================= */
+
+async function clients(){
+
+  const clients =
+    (
+      await api(
+        "/api/clients"
+      )
+    ).clients;
+
+
+  $("clientList").innerHTML =
+
+    clients.length
+
+      ? clients
+          .map(client => `
+
+            <div class="row">
+
+              <div>
+
+                <b>
+                  ${esc(client.phone)}
+                </b>
+
+                <br>
+
+                <small class="muted">
+                  ${new Date(
+                    client.created_at
+                  ).toLocaleDateString(
+                    "pt-BR"
+                  )}
+                </small>
+
+              </div>
+
+
+              <div class="ra">
+
+                <button
+                  class="secondary"
+                  onclick='clientModal(${JSON.stringify(client).replace(/'/g,"&#39;")})'
+                >
+                  Editar
+                </button>
+
+
+                <button
+                  class="danger"
+                  onclick="delC(${client.id})"
+                >
+                  Excluir
+                </button>
+
+              </div>
+
+            </div>
+
+          `)
+          .join("")
+
+      : `
+        <div class="empty">
+          Nenhum cliente.
+        </div>
+      `;
+
 }
-function deletePlatform(id){if(!confirm("Excluir esta plataforma?"))return;api("/api/admin/platforms/"+id,{method:"DELETE"}).then(()=>api("/api/platforms")).then(d=>{state.platforms=d.platforms;toast("Plataforma excluída.");render()}).catch(e=>toast(e.message))}
-function logout(){api("/api/logout",{method:"POST"}).finally(()=>location.reload())}
-document.getElementById("loginForm").addEventListener("submit",e=>{e.preventDefault();api("/api/login",{method:"POST",body:JSON.stringify({phone:document.getElementById("loginPhone").value,password:document.getElementById("loginPassword").value})}).then(load).catch(e=>toast(e.message))});
-load().catch(()=>{});
+
+
+/* =========================
+   MODAL CLIENTE
+========================= */
+
+function clientModal(client = null){
+
+  openM(
+
+    client
+      ? "Editar cliente"
+      : "Adicionar cliente",
+
+    `
+      <form id="cf">
+
+        <div class="field">
+
+          <label>
+            Telefone
+          </label>
+
+          <input
+            id="cp"
+            required
+            value="${esc(
+              client?.phone || ""
+            )}"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            ${
+              client
+                ? "Nova senha (opcional)"
+                : "Senha"
+            }
+          </label>
+
+          <input
+            id="cs"
+            type="password"
+            ${
+              client
+                ? ""
+                : "required"
+            }
+          >
+
+        </div>
+
+
+        <button
+          style="width:100%"
+        >
+          ${
+            client
+              ? "SALVAR"
+              : "CRIAR CLIENTE"
+          }
+        </button>
+
+      </form>
+    `
+  );
+
+
+  $("cf").onsubmit =
+  async e => {
+
+    e.preventDefault();
+
+    try{
+
+      await api(
+
+        client
+          ? "/api/clients/" +
+            client.id
+          : "/api/clients",
+
+        {
+
+          method:
+            client
+              ? "PUT"
+              : "POST",
+
+          body:
+            JSON.stringify({
+
+              phone:
+                $("cp").value,
+
+              password:
+                $("cs").value
+
+            })
+
+        }
+
+      );
+
+
+      closeM();
+
+      clients();
+
+    }catch(error){
+
+      alert(error.message);
+
+    }
+
+  };
+
+}
+
+
+/* =========================
+   EXCLUIR CLIENTE
+========================= */
+
+async function delC(id){
+
+  if(
+    confirm(
+      "Excluir cliente?"
+    )
+  ){
+
+    await api(
+      "/api/clients/" + id,
+      {
+        method:"DELETE"
+      }
+    );
+
+    clients();
+
+  }
+
+}
+
+
+/* =========================
+   INICIAR
+========================= */
+
+boot();
+
 </script>
+
 </body>
-</html>
+  </html>
