@@ -487,7 +487,28 @@ async function findPlatformImage(platformUrl) {
     }
 
     const html = await response.text();
-    const candidates = [];
+
+/* TENTAR PRIMEIRO A IMAGEM PRINCIPAL DO SITE */
+const metaImage = extractMetaImage(
+  html,
+  finalUrl
+);
+
+if (metaImage) {
+  const downloadedImage =
+    await downloadImageAsDataUrl(metaImage);
+
+  if (downloadedImage) {
+    console.log(
+      "Imagem principal do site encontrada:",
+      metaImage
+    );
+
+    return downloadedImage;
+  }
+}
+
+const candidates = [];
 
     function addCandidate(value, priority = 0) {
       if (!value) return;
