@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -9,9 +10,7 @@ const { Pool } = require("pg");
 
 const app = express();
 
-const PORT =
-  process.env.PORT || 10000;
-
+const PORT = process.env.PORT || 10000;
 
 /* =========================
    VARIÁVEIS OBRIGATÓRIAS
@@ -23,211 +22,120 @@ for (const key of [
   "ADMIN_PHONE",
   "ADMIN_PASSWORD"
 ]) {
-
   if (!process.env[key]) {
-
-    console.error(
-      `Variável obrigatória ausente: ${key}`
-    );
-
+    console.error(`Variável obrigatória ausente: ${key}`);
     process.exit(1);
   }
 }
-
 
 /* =========================
    BANCO DE DADOS
 ========================= */
 
 const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL,
-
-  ssl:
-    process.env.DATABASE_URL.includes(
-      "localhost"
-    )
-      ? false
-      : {
-          rejectUnauthorized: false
-        }
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes("localhost")
+    ? false
+    : { rejectUnauthorized: false }
 });
-
 
 /* =========================
    MIDDLEWARES
 ========================= */
 
-app.use(
-  express.json({
-    limit: "1mb"
-  })
-);
-
-app.use(
-  express.urlencoded({
-    extended: true
-  })
-);
-
-app.use(
-  cookieParser()
-);
-
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 /* =========================
    NORMALIZAR TELEFONE
 ========================= */
 
 function normalizePhone(value) {
-
-  return String(value || "")
-    .replace(/\D/g, "");
-
+  return String(value || "").replace(/\D/g, "");
 }
-
 
 /* =========================
    CRIAR TOKEN
 ========================= */
 
 function createToken(user) {
-
   return jwt.sign(
     {
       id: user.id,
       phone: user.phone,
       role: user.role
     },
-
     process.env.JWT_SECRET,
-
-    {
-      expiresIn: "7d"
-    }
+    { expiresIn: "7d" }
   );
-
 }
-
 
 /* =========================
    AUTENTICAÇÃO
 ========================= */
 
 function auth(req, res, next) {
-
   try {
-
-    const token =
-      req.cookies.panel_token;
+    const token = req.cookies.panel_token;
 
     if (!token) {
-
       return res.status(401).json({
-        error:
-          "Não autenticado."
+        error: "Não autenticado."
       });
-
     }
 
-
-    req.user =
-      jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
-
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
 
     next();
-
   } catch (error) {
-
     return res.status(401).json({
-      error:
-        "Sessão inválida ou expirada."
+      error: "Sessão inválida ou expirada."
     });
-
   }
-
 }
-
 
 /* =========================
    SOMENTE ADMIN
 ========================= */
 
-function adminOnly(
-  req,
-  res,
-  next
-) {
-
-  if (
-    req.user?.role !==
-    "admin"
-  ) {
-
+function adminOnly(req, res, next) {
+  if (req.user?.role !== "admin") {
     return res.status(403).json({
-      error:
-        "Acesso restrito ao administrador."
+      error: "Acesso restrito ao administrador."
     });
-
   }
 
   next();
-
 }
-
 
 /* =========================
    VALIDAR URL
 ========================= */
 
 function isHttpUrl(value) {
-
   try {
-
-    const parsed =
-      new URL(value);
+    const parsed = new URL(value);
 
     return (
-      parsed.protocol ===
-        "http:" ||
-      parsed.protocol ===
-        "https:"
+      parsed.protocol === "http:" ||
+      parsed.protocol === "https:"
     );
-
   } catch (error) {
-
     return false;
-
   }
-
 }
-
 
 /* =========================
    RESOLVER IMAGEM
 ========================= */
 
-function resolveImageUrl(
-  imageUrl,
-  pageUrl
-) {
-
+function resolveImageUrl(imageUrl, pageUrl) {
   try {
-
-    return new URL(
-      imageUrl,
-      pageUrl
-    ).toString();
-
+    return new URL(imageUrl, pageUrl).toString();
   } catch (error) {
-
     return "";
-
   }
-
 }
 
 
@@ -235,241 +143,189 @@ function resolveImageUrl(
    EXTRAIR IMAGEM DO SITE
 ========================= */
 
-function extractMetaImage(
-  html,
-  pageUrl
-) {
-
+function extractMetaImage(html, pageUrl) {
   const candidates = [];
-
   let match;
 
-
   const metaRegex =
-    /<meta[^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]+content\s*=\s*["']([^"']+)["'][^>]*>/gi;
+    /<meta\b[^>]*(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
 
+  while ((match = metaRegex.exec(html)) !== null) {
+    const tag = match[0];
+    const keyMatch = tag.match(
+      /(?:property|name)\s*=\s*["']([^"']+)["']/i
+    );
+    const valueMatch = tag.match(
+      /\bcontent\s*=\s*["']([^"']+)["']/i
+    );
 
-  while (
-    (match =
-      metaRegex.exec(html)) !==
-    null
-  ) {
+    if (!keyMatch || !valueMatch) continue;
 
-    const key =
-      String(match[1])
-        .toLowerCase()
-        .trim();
-
-    const value =
-      String(match[2])
-        .trim();
-
+    const key = keyMatch[1].toLowerCase();
+    const value = valueMatch[1].trim();
 
     if (
-      [
-        "og:image",
-        "og:image:url",
-        "twitter:image",
-        "twitter:image:src"
-      ].includes(key) &&
+      ["og:image", "og:image:url", "twitter:image",
+       "twitter:image:src"].includes(key) &&
       value
     ) {
-
       candidates.push(value);
-
     }
-
   }
 
+  const linkRegex = /<link\b[^>]*>/gi;
 
-  const reverseMetaRegex =
-    /<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:property|name)\s*=\s*["']([^"']+)["'][^>]*>/gi;
+  while ((match = linkRegex.exec(html)) !== null) {
+    const tag = match[0];
+    const relMatch = tag.match(
+      /\brel\s*=\s*["']([^"']+)["']/i
+    );
+    const hrefMatch = tag.match(
+      /\bhref\s*=\s*["']([^"']+)["']/i
+    );
 
+    if (!relMatch || !hrefMatch) continue;
 
-  while (
-    (match =
-      reverseMetaRegex.exec(html)) !==
-    null
-  ) {
-
-    const value =
-      String(match[1])
-        .trim();
-
-    const key =
-      String(match[2])
-        .toLowerCase()
-        .trim();
-
+    const rel = relMatch[1].toLowerCase();
+    const href = hrefMatch[1].trim();
 
     if (
-      [
-        "og:image",
-        "og:image:url",
-        "twitter:image",
-        "twitter:image:src"
-      ].includes(key) &&
-      value
+      rel.includes("icon") ||
+      rel.includes("apple-touch-icon")
     ) {
-
-      candidates.push(value);
-
+      candidates.push(href);
     }
-
   }
 
+  for (const candidate of candidates) {
+    const resolved = resolveImageUrl(candidate, pageUrl);
 
-  const linkRegex =
-    /<link[^>]+rel\s*=\s*["']([^"']+)["'][^>]+href\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
-
-  while (
-    (match =
-      linkRegex.exec(html)) !==
-    null
-  ) {
-
-    const rel =
-      String(match[1])
-        .toLowerCase();
-
-    const href =
-      String(match[2])
-        .trim();
-
-
-    if (
-      rel.includes(
-        "apple-touch-icon"
-      ) ||
-      rel === "icon" ||
-      rel.includes(
-        "shortcut icon"
-      )
-    ) {
-
-      if (href) {
-
-        candidates.push(href);
-
-      }
-
-    }
-
-  }
-
-
-  const reverseLinkRegex =
-    /<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
-
-  while (
-    (match =
-      reverseLinkRegex.exec(html)) !==
-    null
-  ) {
-
-    const href =
-      String(match[1])
-        .trim();
-
-    const rel =
-      String(match[2])
-        .toLowerCase();
-
-
-    if (
-      rel.includes(
-        "apple-touch-icon"
-      ) ||
-      rel === "icon" ||
-      rel.includes(
-        "shortcut icon"
-      )
-    ) {
-
-      if (href) {
-
-        candidates.push(href);
-
-      }
-
-    }
-
-  }
-
-
-  for (
-    const candidate of candidates
-  ) {
-
-    const resolved =
-      resolveImageUrl(
-        candidate,
-        pageUrl
-      );
-
-
-    if (
-      resolved &&
-      isHttpUrl(resolved)
-    ) {
-
+    if (resolved && isHttpUrl(resolved)) {
       return resolved;
-
     }
-
   }
-
 
   return "";
-
 }
 
+/* =========================
+   BAIXAR IMAGEM E SALVAR
+   COMO DATA URL
+========================= */
+
+async function downloadImageAsDataUrl(imageUrl) {
+  if (!isHttpUrl(imageUrl)) return "";
+
+  let timeout;
+
+  try {
+    const controller = new AbortController();
+
+    timeout = setTimeout(
+      () => controller.abort(),
+      10000
+    );
+
+    const response = await fetch(imageUrl, {
+      method: "GET",
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36",
+        "Accept":
+          "image/avif,image/webp,image/png,image/jpeg,image/*,*/*;q=0.8"
+      }
+    });
+
+    if (!response.ok) return "";
+
+    const contentType =
+      response.headers.get("content-type") || "";
+
+    if (!contentType.toLowerCase().startsWith("image/")) {
+      return "";
+    }
+
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+      "image/avif",
+      "image/x-icon",
+      "image/vnd.microsoft.icon"
+    ];
+
+    const mime = contentType
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+
+    if (!allowedTypes.includes(mime)) return "";
+
+    const declaredSize = Number(
+      response.headers.get("content-length") || 0
+    );
+
+    if (declaredSize > 2 * 1024 * 1024) return "";
+
+    const buffer = Buffer.from(
+      await response.arrayBuffer()
+    );
+
+    if (!buffer.length || buffer.length > 2 * 1024 * 1024) {
+      return "";
+    }
+
+    return `data:${mime};base64,${buffer.toString("base64")}`;
+  } catch (error) {
+    console.log(
+      "Não foi possível baixar imagem:",
+      error.message
+    );
+
+    return "";
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
 
 /* =========================
    BUSCAR IMAGEM AUTOMÁTICA
 ========================= */
 
 async function findPlatformImage(platformUrl) {
-  if (!isHttpUrl(platformUrl)) {
-    return "";
-  }
+  if (!isHttpUrl(platformUrl)) return "";
 
   let finalUrl = platformUrl;
+  let timeout;
 
   try {
     const controller = new AbortController();
 
-    const timeout = setTimeout(() => {
-      controller.abort();
-    }, 12000);
+    timeout = setTimeout(
+      () => controller.abort(),
+      12000
+    );
 
-    let response;
-
-    try {
-      response = await fetch(platformUrl, {
-        redirect: "follow",
-        signal: controller.signal,
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36",
-          "Accept":
-            "text/html,application/xhtml+xml,image/*,*/*;q=0.8",
-          "Accept-Language":
-            "pt-BR,pt;q=0.9,en;q=0.8"
-        }
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
+    const response = await fetch(platformUrl, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131.0.0.0 Mobile Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8"
+      }
+    });
 
     if (!response.ok) {
       console.log(
         "Busca automática de imagem:",
         response.status
       );
-
       return "";
     }
 
@@ -482,43 +338,19 @@ async function findPlatformImage(platformUrl) {
       return await downloadImageAsDataUrl(finalUrl);
     }
 
-    if (!contentType.includes("text/html")) {
+    if (!contentType.toLowerCase().includes("text/html")) {
       return "";
     }
 
     const html = await response.text();
-
-/* TENTAR PRIMEIRO A IMAGEM PRINCIPAL DO SITE */
-const metaImage = extractMetaImage(
-  html,
-  finalUrl
-);
-
-if (metaImage) {
-  const downloadedImage =
-    await downloadImageAsDataUrl(metaImage);
-
-  if (downloadedImage) {
-    console.log(
-      "Imagem principal do site encontrada:",
-      metaImage
-    );
-
-    return downloadedImage;
-  }
-}
-
-const candidates = [];
+    const candidates = [];
 
     function addCandidate(value, priority = 0) {
       if (!value) return;
 
       value = value.trim();
 
-      if (
-        !value ||
-        /^(data:|blob:|javascript:)/i.test(value)
-      ) {
+      if (/^(data:|blob:|javascript:)/i.test(value)) {
         return;
       }
 
@@ -540,24 +372,24 @@ const candidates = [];
         return;
       }
 
-      if (
-        candidates.some(item => item.url === imageUrl)
-      ) {
+      if (candidates.some(item => item.url === imageUrl)) {
         return;
       }
 
-      candidates.push({
-        url: imageUrl,
-        priority
-      });
+      candidates.push({ url: imageUrl, priority });
     }
 
-    /*
-      1. PROCURAR IMAGENS NAS TAGS IMG
-    */
+    /* IMAGEM PRINCIPAL DO SITE */
 
-    const imgTags =
-      html.match(/<img\b[^>]*>/gi) || [];
+    const metaImage = extractMetaImage(html, finalUrl);
+
+    if (metaImage) {
+      addCandidate(metaImage, 100);
+    }
+
+    /* IMAGENS DAS TAGS IMG */
+
+    const imgTags = html.match(/<img\b[^>]*>/gi) || [];
 
     for (const tag of imgTags) {
       function getAttribute(name) {
@@ -566,9 +398,8 @@ const candidates = [];
           "i"
         );
 
-        const match = tag.match(regex);
-
-        return match ? match[1].trim() : "";
+        const found = tag.match(regex);
+        return found ? found[1].trim() : "";
       }
 
       const description = [
@@ -586,26 +417,13 @@ const candidates = [];
         getAttribute("data-image") ||
         getAttribute("src");
 
-      const gameKeywords =
-        /slot|game|jogo|games|casino|cassino|pgsoft|ppsoft|pragmatic|fortune|dragon|tiger|fish|gold|jackpot|thumbnail|cover|provider/i;
-
       let priority = 10;
 
-      if (
-        gameKeywords.test(description + " " + source)
-      ) {
-        priority = 100;
-      }
-
       if (/logo|brand|favicon|icon/i.test(description)) {
-        priority = 2;
+        priority = 30;
       }
 
       addCandidate(source, priority);
-
-      /*
-        IMAGENS RESPONSIVAS SRCSET
-      */
 
       const srcset = getAttribute("srcset");
 
@@ -614,40 +432,26 @@ const candidates = [];
           const responsiveSource =
             entry.trim().split(/\s+/)[0];
 
-          addCandidate(
-            responsiveSource,
-            gameKeywords.test(
-              description + " " + responsiveSource
-            ) ? 90 : 5
-          );
+          addCandidate(responsiveSource, 8);
         }
       }
     }
 
-    /*
-      2. PROCURAR IMAGENS OG E TWITTER
-    */
+    /* OUTRAS IMAGENS DEFINIDAS EM METADADOS */
 
-    const metaTags =
-      html.match(/<meta\b[^>]*>/gi) || [];
+    const metaTags = html.match(/<meta\b[^>]*>/gi) || [];
 
     for (const tag of metaTags) {
-      if (!/(og:image|twitter:image)/i.test(tag)) {
-        continue;
-      }
+      if (!/(og:image|twitter:image)/i.test(tag)) continue;
 
-      const match = tag.match(
+      const found = tag.match(
         /\bcontent\s*=\s*["']([^"']+)["']/i
       );
 
-      if (match) {
-        addCandidate(match[1], 20);
-      }
+      if (found) addCandidate(found[1], 40);
     }
 
-    /*
-      3. PROCURAR LINKS DE IMAGENS NO HTML
-    */
+    /* LINKS DIRETOS PARA ARQUIVOS DE IMAGEM */
 
     const imageRegex =
       /(?:https?:)?\/\/[^"'()\s<>]+?\.(?:png|jpe?g|webp|gif)(?:\?[^"'()\s<>]*)?|(?:\/|\.\/|\.\.\/)[^"'()\s<>]+?\.(?:png|jpe?g|webp|gif)(?:\?[^"'()\s<>]*)?/gi;
@@ -655,72 +459,37 @@ const candidates = [];
     let match;
 
     while ((match = imageRegex.exec(html)) !== null) {
-      const source = match[0];
-
-      addCandidate(
-        source,
-        /slot|game|jogo|casino|fortune|dragon|tiger|pgsoft|pragmatic/i.test(
-          source
-        ) ? 80 : 4
-      );
+      addCandidate(match[0], 5);
     }
 
-    /*
-      4. TESTAR AS MELHORES IMAGENS
-    */
+    /* TENTAR BAIXAR AS MELHORES CANDIDATAS */
 
-    candidates.sort(
-      (a, b) => b.priority - a.priority
-    );
+    candidates.sort((a, b) => b.priority - a.priority);
 
-    for (const candidate of candidates.slice(0, 12)) {
-      try {
-        const image =
-          await downloadImageAsDataUrl(candidate.url);
+    for (const candidate of candidates.slice(0, 15)) {
+      const image = await downloadImageAsDataUrl(candidate.url);
 
-        if (image) {
-          console.log(
-            "Imagem encontrada:",
-            candidate.url
-          );
-
-          return image;
-        }
-      } catch (error) {
-        console.log(
-          "Imagem não acessível:",
-          candidate.url
-        );
+      if (image) {
+        console.log("Imagem encontrada:", candidate.url);
+        return image;
       }
     }
 
-    /*
-      5. TENTAR O FAVICON DO SITE
-    */
+    /* ÚLTIMA TENTATIVA: FAVICON */
 
     try {
       const origin = new URL(finalUrl).origin;
 
-      const favicon =
-        await downloadImageAsDataUrl(
-          origin + "/favicon.ico"
-        );
-
-      if (favicon) {
-        return favicon;
-      }
-    } catch (error) {
-      console.log(
-        "Favicon indisponível:",
-        error.message
+      const favicon = await downloadImageAsDataUrl(
+        origin + "/favicon.ico"
       );
+
+      if (favicon) return favicon;
+    } catch (error) {
+      console.log("Favicon indisponível:", error.message);
     }
 
-    console.log(
-      "Nenhuma imagem encontrada:",
-      platformUrl
-    );
-
+    console.log("Nenhuma imagem encontrada:", platformUrl);
     return "";
   } catch (error) {
     console.log(
@@ -729,294 +498,75 @@ const candidates = [];
     );
 
     return "";
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 }
 
 
 
 /* =========================
-   BAIXAR IMAGEM
-   E TRANSFORMAR EM DATA URL
+   TENTAR IMAGEM NOVAMENTE
 ========================= */
 
-async function downloadImageAsDataUrl(
-  imageUrl
-) {
-
-  if (
-    !isHttpUrl(imageUrl)
-  ) {
-
-    return "";
-
-  }
-
-
-  try {
-
-    const controller =
-      new AbortController();
-
-
-    const timeout =
-      setTimeout(
-        () => controller.abort(),
-        10000
-      );
-
-
-    const response =
-      await fetch(
-        imageUrl,
-        {
-          method: "GET",
-
-          redirect: "follow",
-
-          signal:
-            controller.signal,
-
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 Chrome/131 Mobile Safari/537.36",
-
-            "Accept":
-              "image/avif,image/webp,image/png,image/jpeg,image/*,*/*;q=0.8"
-          }
-        }
-      );
-
-
-    clearTimeout(timeout);
-
-
-    if (
-      !response.ok
-    ) {
-
-      return "";
-
-    }
-
-
-    const contentType =
-      response.headers.get(
-        "content-type"
-      ) || "";
-
-
-    /*
-      ACEITAR SOMENTE IMAGENS
-    */
-
-    if (
-      !contentType.startsWith(
-        "image/"
-      )
-    ) {
-
-      return "";
-
-    }
-
-
-    /*
-      EVITAR IMAGENS GIGANTES
-    */
-
-    const contentLength =
-      Number(
-        response.headers.get(
-          "content-length"
-        ) || 0
-      );
-
-
-    if (
-      contentLength >
-      2 * 1024 * 1024
-    ) {
-
-      return "";
-
-    }
-
-
-    const buffer =
-      Buffer.from(
-        await response.arrayBuffer()
-      );
-
-
-    /*
-      SEGURANÇA CONTRA DOWNLOAD GRANDE
-    */
-
-    if (
-      buffer.length >
-      2 * 1024 * 1024
-    ) {
-
-      return "";
-
-    }
-
-
-    /*
-      NORMALIZAR O TIPO
-    */
-
-    let mime =
-      contentType
-        .split(";")[0]
-        .trim()
-        .toLowerCase();
-
-
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-      "image/avif",
-      "image/x-icon",
-      "image/vnd.microsoft.icon"
-    ];
-
-
-    if (
-      !allowedTypes.includes(mime)
-    ) {
-
-      return "";
-
-    }
-
-
-    /*
-      TRANSFORMAR EM BASE64
-    */
-
-    const base64 =
-      buffer.toString(
-        "base64"
-      );
-
-
-    return (
-      `data:${mime};base64,${base64}`
-    );
-
-
-  } catch (error) {
-
-    console.log(
-      "Não foi possível baixar imagem:",
-      error.message
-    );
-
-
-    return "";
-
-  }
-
-  } 
-
-
-/* =========================
-   TENTAR IMAGEM AUTOMATICAMENTE
-========================= */
-
-async function retryPlatformImage(
-  platformId,
-  platformUrl
-) {
-
-  const delays = [
-    8000,
-    20000,
-    40000
-  ];
+async function retryPlatformImage(platformId, platformUrl) {
+  const delays = [8000, 20000, 40000];
 
   for (const delay of delays) {
-
-    await new Promise(resolve =>
-      setTimeout(resolve, delay)
-    );
+    await new Promise(resolve => setTimeout(resolve, delay));
 
     try {
-
-      const result = await pool.query(
+      const check = await pool.query(
         `SELECT image_url
          FROM platforms
          WHERE id = $1`,
         [platformId]
       );
 
-      if (!result.rowCount) {
-        return;
-      }
+      if (!check.rows.length) return;
 
-      if (result.rows[0].image_url) {
-        return;
-      }
+      if (check.rows[0].image_url) return;
 
-      console.log(
-        "Tentando buscar imagem novamente:",
-        platformUrl
-      );
+      const image = await findPlatformImage(platformUrl);
 
-      const imageUrl =
-        await findPlatformImage(platformUrl);
+      if (!image) continue;
 
-      if (
-        !imageUrl ||
-        !imageUrl.startsWith("data:image/")
-      ) {
-        continue;
-      }
-
-      await pool.query(
+      const saved = await pool.query(
         `UPDATE platforms
          SET image_url = $1
          WHERE id = $2
-           AND (image_url IS NULL OR image_url = '')`,
-        [imageUrl, platformId]
+           AND (image_url IS NULL OR image_url = '')
+         RETURNING id`,
+        [image, platformId]
       );
 
-      console.log(
-        "Imagem salva automaticamente para a plataforma:",
-        platformId
-      );
+      if (saved.rows.length) {
+        console.log(
+          "Imagem salva para plataforma:",
+          platformId
+        );
+      }
 
       return;
-
     } catch (error) {
-
       console.error(
-        "Erro ao tentar novamente a imagem:",
+        "Erro ao tentar novamente imagem:",
         error.message
       );
-
     }
-
   }
 
   console.log(
-    "Não foi possível encontrar uma imagem após as tentativas:",
-    platformUrl
+    "Não foi possível obter imagem para plataforma:",
+    platformId
   );
-
 }
 
-
-
 /* =========================
-   BANCO DE DADOS
+   INICIALIZAR BANCO
 ========================= */
 
-async function initDatabase() {
-
+async function initializeDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -1024,532 +574,359 @@ async function initDatabase() {
       password_hash TEXT NOT NULL,
       role VARCHAR(20) NOT NULL DEFAULT 'client',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+    )
+  `);
 
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS platforms (
       id SERIAL PRIMARY KEY,
-      name VARCHAR(150) NOT NULL,
+      name VARCHAR(200) NOT NULL,
       url TEXT NOT NULL,
       description TEXT DEFAULT '',
       image_url TEXT DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-
-    CREATE INDEX IF NOT EXISTS
-    idx_platforms_created_at
-    ON platforms(created_at DESC);
+    )
   `);
 
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+    platforms_created_at_idx
+    ON platforms (created_at DESC)
+  `);
 
-  const adminPhone =
-    normalizePhone(
-      process.env.ADMIN_PHONE
+  const adminPhone = normalizePhone(
+    process.env.ADMIN_PHONE
+  );
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPhone || !adminPassword) {
+    throw new Error(
+      "ADMIN_PHONE e ADMIN_PASSWORD precisam estar configurados."
     );
+  }
 
-  const adminPassword =
-    String(
-      process.env.ADMIN_PASSWORD
+  const existingAdmin = await pool.query(
+    `SELECT id
+     FROM users
+     WHERE phone = $1`,
+    [adminPhone]
+  );
+
+  if (!existingAdmin.rows.length) {
+    const passwordHash = await bcrypt.hash(
+      adminPassword,
+      12
     );
-
-
-  const existing =
-    await pool.query(
-      `SELECT id
-       FROM users
-       WHERE phone = $1
-       LIMIT 1`,
-      [adminPhone]
-    );
-
-
-  if (!existing.rowCount) {
-
-    const passwordHash =
-      await bcrypt.hash(
-        adminPassword,
-        12
-      );
-
 
     await pool.query(
       `INSERT INTO users
-       (
-         phone,
-         password_hash,
-         role
-       )
-       VALUES
-       (
-         $1,
-         $2,
-         'admin'
-       )`,
-      [
-        adminPhone,
-        passwordHash
-      ]
+       (phone, password_hash, role)
+       VALUES ($1, $2, 'admin')`,
+      [adminPhone, passwordHash]
     );
 
-
-    console.log(
-      "Administrador criado com sucesso."
-    );
-
+    console.log("Administrador inicial criado.");
   } else {
-
     await pool.query(
       `UPDATE users
        SET role = 'admin'
        WHERE phone = $1`,
       [adminPhone]
     );
-
   }
 
+  console.log("Banco de dados inicializado.");
 }
-
-
-/* =========================
-   HEALTH
-========================= */
-
-app.get(
-  "/api/health",
-  async (req, res) => {
-
-    try {
-
-      await pool.query(
-        "SELECT 1"
-      );
-
-
-      res.json({
-        ok: true,
-        database: true
-      });
-
-    } catch (error) {
-
-      console.error(error);
-
-
-      res.status(500).json({
-        ok: false,
-        database: false
-      });
-
-    }
-
-  }
-);
-
 
 /* =========================
    LOGIN
 ========================= */
 
-app.post(
-  "/api/auth/login",
-  async (req, res) => {
-
-    try {
-
-      const phone =
-        normalizePhone(
-          req.body.phone
-        );
-
-
-      const password =
-        String(
-          req.body.password || ""
-        );
-
-
-      if (
-        !phone ||
-        !password
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Informe telefone e senha."
-        });
-
-      }
-
-
-      /* =====================
-         ADMIN
-      ===================== */
-
-      const adminPhone =
-        normalizePhone(
-          process.env.ADMIN_PHONE
-        );
-
-
-      if (
-        phone === adminPhone
-      ) {
-
-        const adminPassword =
-          String(
-            process.env.ADMIN_PASSWORD
-          );
-
-
-        if (
-          password !==
-          adminPassword
-        ) {
-
-          return res.status(401).json({
-            error:
-              "Senha incorreta."
-          });
-
-        }
-
-
-        const adminResult =
-          await pool.query(
-            `SELECT
-              id,
-              phone,
-              role
-             FROM users
-             WHERE phone = $1
-             LIMIT 1`,
-            [adminPhone]
-          );
-
-
-        if (
-          !adminResult.rowCount
-        ) {
-
-          return res.status(500).json({
-            error:
-              "Administrador não encontrado."
-          });
-
-        }
-
-
-        const admin =
-          adminResult.rows[0];
-
-
-        const token =
-          createToken({
-            id: admin.id,
-            phone: admin.phone,
-            role: "admin"
-          });
-
-
-        res.cookie(
-          "panel_token",
-          token,
-          {
-            httpOnly: true,
-            sameSite: "lax",
-
-            secure:
-              process.env.NODE_ENV ===
-              "production",
-
-            maxAge:
-              7 *
-              24 *
-              60 *
-              60 *
-              1000
-          }
-        );
-
-
-        return res.json({
-          ok: true,
-
-          user: {
-            id: admin.id,
-            phone: admin.phone,
-            role: "admin"
-          }
-        });
-
-      }
-
-
-      /* =====================
-         CLIENTE EXISTENTE
-      ===================== */
-
-      const result =
-        await pool.query(
-          `SELECT
-            id,
-            phone,
-            password_hash,
-            role
-           FROM users
-           WHERE phone = $1
-           LIMIT 1`,
-          [phone]
-        );
-
-
-      if (
-        result.rowCount
-      ) {
-
-        const user =
-          result.rows[0];
-
-
-        const validPassword =
-          await bcrypt.compare(
-            password,
-            user.password_hash
-          );
-
-
-        if (
-          !validPassword
-        ) {
-
-          return res.status(401).json({
-            error:
-              "Senha incorreta."
-          });
-
-        }
-
-
-        const token =
-          createToken(user);
-
-
-        res.cookie(
-          "panel_token",
-          token,
-          {
-            httpOnly: true,
-            sameSite: "lax",
-
-            secure:
-              process.env.NODE_ENV ===
-              "production",
-
-            maxAge:
-              7 *
-              24 *
-              60 *
-              60 *
-              1000
-          }
-        );
-
-
-        return res.json({
-          ok: true,
-
-          user: {
-            id: user.id,
-            phone: user.phone,
-            role: user.role
-          }
-        });
-
-      }
-
-
-      /* =====================
-         CLIENTE NOVO
-      ===================== */
-
-      const passwordHash =
-        await bcrypt.hash(
-          password,
-          12
-        );
-
-
-      const newUser =
-        await pool.query(
-          `INSERT INTO users
-           (
-             phone,
-             password_hash,
-             role
-           )
-           VALUES
-           (
-             $1,
-             $2,
-             'client'
-           )
-           RETURNING
-             id,
-             phone,
-             role`,
-          [
-            phone,
-            passwordHash
-          ]
-        );
-
-
-      const user =
-        newUser.rows[0];
-
-
-      const token =
-        createToken(user);
-
-
-      res.cookie(
-        "panel_token",
-        token,
-        {
-          httpOnly: true,
-          sameSite: "lax",
-
-          secure:
-            process.env.NODE_ENV ===
-            "production",
-
-          maxAge:
-            7 *
-            24 *
-            60 *
-            60 *
-            1000
-        }
-      );
-
-
-      return res.status(201).json({
-        ok: true,
-        created: true,
-
-        user: {
-          id: user.id,
-          phone: user.phone,
-          role: user.role
-        }
+app.post("/api/login", async (req, res) => {
+  try {
+    const phone = normalizePhone(req.body.phone);
+    const password = String(req.body.password || "");
+
+    if (!phone || !password) {
+      return res.status(400).json({
+        error: "Informe telefone e senha."
       });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro no login:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Erro interno no login."
-      });
-
     }
 
-  }
-);
-
-
-/* =========================
-   LOGOUT
-========================= */
-
-app.post(
-  "/api/auth/logout",
-  (req, res) => {
-
-    res.clearCookie(
-      "panel_token"
+    const result = await pool.query(
+      `SELECT id, phone, password_hash, role
+       FROM users
+       WHERE phone = $1
+       LIMIT 1`,
+      [phone]
     );
 
+    if (!result.rows.length) {
+      return res.status(401).json({
+        error: "Telefone ou senha incorretos."
+      });
+    }
 
-    res.json({
-      ok: true
+    const user = result.rows[0];
+
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password_hash
+    );
+
+    if (!validPassword) {
+      return res.status(401).json({
+        error: "Telefone ou senha incorretos."
+      });
+    }
+
+    const token = createToken(user);
+
+    res.cookie("panel_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/"
     });
 
+    return res.json({
+      success: true,
+      user: {
+        id: user.id,
+        phone: user.phone,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Erro no login:", error);
+
+    return res.status(500).json({
+      error: "Erro interno ao realizar login."
+    });
   }
-);
+});
+
+/* =========================
+   VER USUÁRIO LOGADO
+========================= */
+
+app.get("/api/me", auth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, phone, role
+       FROM users
+       WHERE id = $1
+       LIMIT 1`,
+      [req.user.id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(401).json({
+        error: "Usuário não encontrado."
+      });
+    }
+
+    return res.json({
+      user: result.rows[0]
+    });
+  } catch (error) {
+    console.error("Erro ao consultar usuário:", error);
+
+    return res.status(500).json({
+      error: "Erro ao consultar sessão."
+    });
+  }
+});
+
+/* =========================
+   SAIR DA CONTA
+========================= */
+
+app.post("/api/logout", (req, res) => {
+  res.clearCookie("panel_token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/"
+  });
+
+  return res.json({
+    success: true,
+    message: "Sessão encerrada."
+  });
+});
+
 
 
 /* =========================
-   USUÁRIO LOGADO
+   LISTAR USUÁRIOS
 ========================= */
 
 app.get(
-  "/api/auth/me",
+  "/api/users",
   auth,
-  (req, res) => {
+  adminOnly,
+  async (req, res) => {
+    try {
+      const result = await pool.query(
+        `SELECT id, phone, role, created_at
+         FROM users
+         ORDER BY id DESC`
+      );
 
-    res.json({
-      user: req.user
-    });
+      return res.json({
+        users: result.rows
+      });
+    } catch (error) {
+      console.error("Erro ao listar usuários:", error);
 
+      return res.status(500).json({
+        error: "Não foi possível listar usuários."
+      });
+    }
   }
 );
 
+/* =========================
+   CRIAR USUÁRIO
+========================= */
+
+app.post(
+  "/api/users",
+  auth,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const phone = normalizePhone(req.body.phone);
+      const password = String(req.body.password || "");
+
+      if (!phone || password.length < 6) {
+        return res.status(400).json({
+          error: "Informe telefone e senha com pelo menos 6 caracteres."
+        });
+      }
+
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      const result = await pool.query(
+        `INSERT INTO users
+         (phone, password_hash, role)
+         VALUES ($1, $2, 'client')
+         RETURNING id, phone, role, created_at`,
+        [phone, passwordHash]
+      );
+
+      return res.status(201).json({
+        user: result.rows[0]
+      });
+    } catch (error) {
+      if (error.code === "23505") {
+        return res.status(409).json({
+          error: "Esse telefone já está cadastrado."
+        });
+      }
+
+      console.error("Erro ao criar usuário:", error);
+
+      return res.status(500).json({
+        error: "Não foi possível criar usuário."
+      });
+    }
+  }
+);
+
+/* =========================
+   EXCLUIR USUÁRIO
+========================= */
+
+app.delete(
+  "/api/users/:id",
+  auth,
+  adminOnly,
+  async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+          error: "ID de usuário inválido."
+        });
+      }
+
+      if (id === Number(req.user.id)) {
+        return res.status(400).json({
+          error: "Você não pode excluir sua própria conta."
+        });
+      }
+
+      const result = await pool.query(
+        `DELETE FROM users
+         WHERE id = $1
+           AND role <> 'admin'
+         RETURNING id`,
+        [id]
+      );
+
+      if (!result.rows.length) {
+        return res.status(404).json({
+          error: "Usuário não encontrado ou não pode ser excluído."
+        });
+      }
+
+      return res.json({
+        success: true
+      });
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+
+      return res.status(500).json({
+        error: "Não foi possível excluir usuário."
+      });
+    }
+  }
+);
 
 /* =========================
    LISTAR PLATAFORMAS
 ========================= */
 
-app.get(
-  "/api/platforms",
-  async (req, res) => {
+app.get("/api/platforms", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT
+         id,
+         name,
+         url,
+         description,
+         image_url,
+         created_at
+       FROM platforms
+       ORDER BY created_at DESC, id DESC`
+    );
 
-    try {
+    const platforms = result.rows.map(platform => ({
+      ...platform,
+      is_recent:
+        Date.now() - new Date(platform.created_at).getTime()
+        < 7 * 24 * 60 * 60 * 1000
+    }));
 
-      const result =
-        await pool.query(`
-          SELECT
-            id,
-            name,
-            url,
-            description,
-            image_url,
-            created_at
-          FROM platforms
-          ORDER BY created_at DESC
-        `);
+    return res.json({
+      platforms
+    });
+  } catch (error) {
+    console.error("Erro ao listar plataformas:", error);
 
-
-      res.json({
-        platforms:
-          result.rows
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao carregar plataformas:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Não foi possível carregar as plataformas."
-      });
-
-    }
-
+    return res.status(500).json({
+      error: "Não foi possível carregar as plataformas."
+    });
   }
-);
+});
 
 /* =========================
-   ADICIONAR PLATAFORMA
+   CADASTRAR PLATAFORMA
 ========================= */
 
 app.post(
@@ -1557,121 +934,63 @@ app.post(
   auth,
   adminOnly,
   async (req, res) => {
-
     try {
+      const name = String(req.body.name || "").trim();
+      const url = String(req.body.url || "").trim();
+      const description = String(
+        req.body.description || ""
+      ).trim();
 
-      const {
-        name,
-        url,
-        description = ""
-      } = req.body;
-
-
-      if (
-        !name?.trim() ||
-        !url?.trim()
-      ) {
-
+      if (!name || !url) {
         return res.status(400).json({
-          error:
-            "Nome e URL são obrigatórios."
+          error: "Informe o nome e o link da plataforma."
         });
-
       }
 
-
-      if (
-        !isHttpUrl(
-          url.trim()
-        )
-      ) {
-
+      if (!isHttpUrl(url)) {
         return res.status(400).json({
-          error:
-            "A URL precisa começar com http:// ou https://."
+          error: "Informe um link válido começando com http:// ou https://."
         });
-
       }
 
+      let imageUrl = String(
+        req.body.image_url || ""
+      ).trim();
 
-      const imageUrl =
-        await findPlatformImage(
-          url.trim()
-        );
+      if (imageUrl && !isHttpUrl(imageUrl) &&
+          !imageUrl.startsWith("data:image/")) {
+        imageUrl = "";
+      }
 
-
-      const result =
-        await pool.query(
-          `INSERT INTO platforms
-           (
-             name,
-             url,
-             description,
-             image_url
-           )
-           VALUES
-           (
-             $1,
-             $2,
-             $3,
-             $4
-           )
-           RETURNING
-             id,
-             name,
-             url,
-             description,
-             image_url,
-             created_at`,
-          [
-            name.trim(),
-            url.trim(),
-            String(
-              description
-            ).trim(),
-            imageUrl
-          ]
-        );
-
-
-      
-const savedPlatform = result.rows[0];
-
-if (!savedPlatform.image_url) {
-
-  setImmediate(() => {
-    retryPlatformImage(
-      savedPlatform.id,
-      savedPlatform.url
-    );
-  });
-
-}
-
-res.status(201).json({
-  platform: savedPlatform
-});
-      
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao adicionar plataforma:",
-        error
+      const result = await pool.query(
+        `INSERT INTO platforms
+         (name, url, description, image_url)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, name, url, description, image_url, created_at`,
+        [name, url, description, imageUrl]
       );
 
+      const platform = result.rows[0];
 
-      res.status(500).json({
-        error:
-          "Erro ao adicionar plataforma."
+      if (!platform.image_url) {
+        setImmediate(() => {
+          retryPlatformImage(platform.id, platform.url);
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        platform
       });
+    } catch (error) {
+      console.error("Erro ao cadastrar plataforma:", error);
 
+      return res.status(500).json({
+        error: "Não foi possível cadastrar a plataforma."
+      });
     }
-
   }
 );
-
 
 /* =========================
    EDITAR PLATAFORMA
@@ -1682,120 +1001,74 @@ app.put(
   auth,
   adminOnly,
   async (req, res) => {
-
     try {
+      const id = Number(req.params.id);
 
-      const id =
-        Number(
-          req.params.id
-        );
-
-
-      const {
-        name,
-        url,
-        description = ""
-      } = req.body;
-
-
-      if (
-        !Number.isInteger(id) ||
-        !name?.trim() ||
-        !url?.trim()
-      ) {
-
+      if (!Number.isInteger(id) || id <= 0) {
         return res.status(400).json({
-          error:
-            "Dados inválidos."
+          error: "ID de plataforma inválido."
         });
-
       }
 
+      const name = String(req.body.name || "").trim();
+      const url = String(req.body.url || "").trim();
+      const description = String(
+        req.body.description || ""
+      ).trim();
 
-      if (
-        !isHttpUrl(
-          url.trim()
-        )
-      ) {
-
+      if (!name || !url || !isHttpUrl(url)) {
         return res.status(400).json({
-          error:
-            "A URL precisa começar com http:// ou https://."
+          error: "Informe nome e link válido."
         });
-
       }
 
+      const imageUrl = String(
+        req.body.image_url || ""
+      ).trim();
 
-      const imageUrl =
-        await findPlatformImage(
-          url.trim()
-        );
+      const safeImage = (
+        isHttpUrl(imageUrl) ||
+        imageUrl.startsWith("data:image/")
+      ) ? imageUrl : "";
 
-
-      const result =
-        await pool.query(
-          `UPDATE platforms
-           SET
-             name = $1,
+      const result = await pool.query(
+        `UPDATE platforms
+         SET name = $1,
              url = $2,
              description = $3,
              image_url = $4
-           WHERE id = $5
-           RETURNING
-             id,
-             name,
-             url,
-             description,
-             image_url,
-             created_at`,
-          [
-            name.trim(),
-            url.trim(),
-            String(
-              description
-            ).trim(),
-            imageUrl,
-            id
-          ]
-        );
-
-
-      if (
-        !result.rowCount
-      ) {
-
-        return res.status(404).json({
-          error:
-            "Plataforma não encontrada."
-        });
-
-      }
-
-
-      res.json({
-        platform:
-          result.rows[0]
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao editar plataforma:",
-        error
+         WHERE id = $5
+         RETURNING id, name, url, description, image_url, created_at`,
+        [name, url, description, safeImage, id]
       );
 
+      if (!result.rows.length) {
+        return res.status(404).json({
+          error: "Plataforma não encontrada."
+        });
+      }
 
-      res.status(500).json({
-        error:
-          "Erro ao editar plataforma."
+      const platform = result.rows[0];
+
+      if (!platform.image_url) {
+        setImmediate(() => {
+          retryPlatformImage(platform.id, platform.url);
+        });
+      }
+
+      return res.json({
+        success: true,
+        platform
       });
+    } catch (error) {
+      console.error("Erro ao editar plataforma:", error);
 
+      return res.status(500).json({
+        error: "Não foi possível editar a plataforma."
+      });
     }
-
   }
 );
-
 
 /* =========================
    EXCLUIR PLATAFORMA
@@ -1806,515 +1079,156 @@ app.delete(
   auth,
   adminOnly,
   async (req, res) => {
-
     try {
+      const id = Number(req.params.id);
 
-      const id =
-        Number(
-          req.params.id
-        );
-
-
-      const result =
-        await pool.query(
-          `DELETE FROM platforms
-           WHERE id = $1
-           RETURNING id`,
-          [id]
-        );
-
-
-      if (
-        !result.rowCount
-      ) {
-
-        return res.status(404).json({
-          error:
-            "Plataforma não encontrada."
-        });
-
-      }
-
-
-      res.json({
-        ok: true
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao excluir plataforma:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Erro ao excluir plataforma."
-      });
-
-    }
-
-  }
-);
-
-
-/* =========================
-   CLIENTES - LISTAR
-========================= */
-
-app.get(
-  "/api/clients",
-  auth,
-  adminOnly,
-  async (req, res) => {
-
-    try {
-
-      const result =
-        await pool.query(`
-          SELECT
-            id,
-            phone,
-            created_at
-          FROM users
-          WHERE role = 'client'
-          ORDER BY created_at DESC
-        `);
-
-
-      res.json({
-        clients:
-          result.rows
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao carregar clientes:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Erro ao carregar clientes."
-      });
-
-    }
-
-  }
-);
-
-
-/* =========================
-   CLIENTES - CRIAR
-========================= */
-
-app.post(
-  "/api/clients",
-  auth,
-  adminOnly,
-  async (req, res) => {
-
-    try {
-
-      const phone =
-        normalizePhone(
-          req.body.phone
-        );
-
-
-      const password =
-        String(
-          req.body.password || ""
-        );
-
-
-      if (
-        !phone ||
-        password.length < 4
-      ) {
-
+      if (!Number.isInteger(id) || id <= 0) {
         return res.status(400).json({
-          error:
-            "Telefone e senha com pelo menos 4 caracteres são obrigatórios."
+          error: "ID de plataforma inválido."
         });
-
       }
 
-
-      const exists =
-        await pool.query(
-          `SELECT id
-           FROM users
-           WHERE phone = $1
-           LIMIT 1`,
-          [phone]
-        );
-
-
-      if (
-        exists.rowCount
-      ) {
-
-        return res.status(409).json({
-          error:
-            "Esse telefone já está cadastrado."
-        });
-
-      }
-
-
-      const passwordHash =
-        await bcrypt.hash(
-          password,
-          12
-        );
-
-
-      const result =
-        await pool.query(
-          `INSERT INTO users
-           (
-             phone,
-             password_hash,
-             role
-           )
-           VALUES
-           (
-             $1,
-             $2,
-             'client'
-           )
-           RETURNING
-             id,
-             phone,
-             created_at`,
-          [
-            phone,
-            passwordHash
-          ]
-        );
-
-
-      res.status(201).json({
-        client:
-          result.rows[0]
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao criar cliente:",
-        error
+      const result = await pool.query(
+        `DELETE FROM platforms
+         WHERE id = $1
+         RETURNING id`,
+        [id]
       );
 
-
-      res.status(500).json({
-        error:
-          "Erro ao criar cliente."
-      });
-
-    }
-
-  }
-);
-
-
-/* =========================
-   CLIENTES - EDITAR
-========================= */
-
-app.put(
-  "/api/clients/:id",
-  auth,
-  adminOnly,
-  async (req, res) => {
-
-    try {
-
-      const id =
-        Number(
-          req.params.id
-        );
-
-
-      const phone =
-        normalizePhone(
-          req.body.phone
-        );
-
-
-      const password =
-        String(
-          req.body.password || ""
-        );
-
-
-      if (
-        !Number.isInteger(id) ||
-        !phone
-      ) {
-
-        return res.status(400).json({
-          error:
-            "Dados inválidos."
-        });
-
-      }
-
-
-      const duplicate =
-        await pool.query(
-          `SELECT id
-           FROM users
-           WHERE phone = $1
-           AND id <> $2`,
-          [
-            phone,
-            id
-          ]
-        );
-
-
-      if (
-        duplicate.rowCount
-      ) {
-
-        return res.status(409).json({
-          error:
-            "Esse telefone já está em uso."
-        });
-
-      }
-
-
-      let result;
-
-
-      if (password) {
-
-        const passwordHash =
-          await bcrypt.hash(
-            password,
-            12
-          );
-
-
-        result =
-          await pool.query(
-            `UPDATE users
-             SET
-               phone = $1,
-               password_hash = $2
-             WHERE
-               id = $3
-               AND role = 'client'
-             RETURNING
-               id,
-               phone,
-               created_at`,
-            [
-              phone,
-              passwordHash,
-              id
-            ]
-          );
-
-      } else {
-
-        result =
-          await pool.query(
-            `UPDATE users
-             SET phone = $1
-             WHERE
-               id = $2
-               AND role = 'client'
-             RETURNING
-               id,
-               phone,
-               created_at`,
-            [
-              phone,
-              id
-            ]
-          );
-
-      }
-
-
-      if (
-        !result.rowCount
-      ) {
-
+      if (!result.rows.length) {
         return res.status(404).json({
-          error:
-            "Cliente não encontrado."
+          error: "Plataforma não encontrada."
         });
-
       }
 
-
-      res.json({
-        client:
-          result.rows[0]
+      return res.json({
+        success: true
       });
-
-
     } catch (error) {
+      console.error("Erro ao excluir plataforma:", error);
 
-      console.error(
-        "Erro ao editar cliente:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Erro ao editar cliente."
+      return res.status(500).json({
+        error: "Não foi possível excluir a plataforma."
       });
-
     }
-
   }
 );
 
 
+
 /* =========================
-   CLIENTES - EXCLUIR
+   VERIFICAR SAÚDE DO SERVIDOR
 ========================= */
 
-app.delete(
-  "/api/clients/:id",
-  auth,
-  adminOnly,
-  async (req, res) => {
+app.get("/api/health", async (req, res) => {
+  try {
+    await pool.query("SELECT 1");
 
-    try {
+    return res.json({
+      success: true,
+      status: "online",
+      database: "connected"
+    });
+  } catch (error) {
+    console.error("Erro na verificação:", error.message);
 
-      const id =
-        Number(
-          req.params.id
+    return res.status(503).json({
+      success: false,
+      status: "degraded",
+      database: "disconnected"
+    });
+  }
+});
+
+/* =========================
+   ARQUIVOS PÚBLICOS
+========================= */
+
+app.use(express.static(path.join(__dirname, "public")));
+
+/* =========================
+   PÁGINA PRINCIPAL
+========================= */
+
+app.get("/", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "index.html"),
+    error => {
+      if (error && !res.headersSent) {
+        res.status(404).send(
+          "Arquivo index.html não encontrado na pasta public."
         );
-
-
-      const result =
-        await pool.query(
-          `DELETE FROM users
-           WHERE
-             id = $1
-             AND role = 'client'
-           RETURNING id`,
-          [id]
-        );
-
-
-      if (
-        !result.rowCount
-      ) {
-
-        return res.status(404).json({
-          error:
-            "Cliente não encontrado."
-        });
-
       }
-
-
-      res.json({
-        ok: true
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "Erro ao excluir cliente:",
-        error
-      );
-
-
-      res.status(500).json({
-        error:
-          "Erro ao excluir cliente."
-      });
-
     }
+  );
+});
 
+/* =========================
+   ROTA NÃO ENCONTRADA
+========================= */
+
+app.use("/api", (req, res) => {
+  return res.status(404).json({
+    error: "Rota da API não encontrada."
+  });
+});
+
+/* =========================
+   ERROS DO SERVIDOR
+========================= */
+
+app.use((error, req, res, next) => {
+  console.error("Erro inesperado:", error);
+
+  if (res.headersSent) {
+    return next(error);
   }
-);
+
+  return res.status(500).json({
+    error: "Erro interno do servidor."
+  });
+});
 
 /* =========================
-   ARQUIVOS DO PAINEL
+   INICIAR APLICAÇÃO
 ========================= */
 
-app.use(
-  express.static(
-    __dirname,
-    {
-      index: "index.html"
-    }
-  )
-);
+async function startServer() {
+  try {
+    await initializeDatabase();
 
-
-/* =========================
-   ROTA PRINCIPAL
-========================= */
-
-app.use(
-  (req, res, next) => {
-
-    if (
-      req.method === "GET" &&
-      !req.path.startsWith("/api/")
-    ) {
-
-      return res.sendFile(
-        path.join(
-          __dirname,
-          "index.html"
-        )
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(
+        `Servidor iniciado na porta ${PORT}`
       );
-
-    }
-
-    next();
-
-  }
-);
-
-/* =========================
-   INICIAR BANCO E SERVIDOR
-========================= */
-
-initDatabase()
-  .then(() => {
-
-    app.listen(
-      PORT,
-      "0.0.0.0",
-      () => {
-
-        console.log(
-          `Servidor rodando na porta ${PORT}`
-        );
-
-      }
-    );
-
-  })
-  .catch(error => {
-
+    });
+  } catch (error) {
     console.error(
-      "Erro ao iniciar banco:",
+      "Não foi possível iniciar o servidor:",
       error
     );
 
     process.exit(1);
+  }
+}
 
-  });
+startServer();
+
+/* =========================
+   ENCERRAMENTO SEGURO
+========================= */
+
+async function shutdown(signal) {
+  console.log(`Recebido ${signal}. Encerrando servidor...`);
+
+  try {
+    await pool.end();
+    process.exit(0);
+  } catch (error) {
+    console.error("Erro ao encerrar banco:", error);
+    process.exit(1);
+  }
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
